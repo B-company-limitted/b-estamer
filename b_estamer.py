@@ -1,11 +1,61 @@
 import streamlit as st
 import pandas as pd
 
+import base64
+import requests
+import math
+import json
+import re
+from io import BytesIO
+from PIL import Image
+import fitz
+from datetime import datetim
 st.set_page_config(page_title="B-ESTAMER QS AI", page_icon="🏗️", layout="wide")
 
 # HEADER
 st.title("🏗️ B-ESTAMER V2 - CEO MODE")
 st.caption("RPPA BOQ Auto-Checker | Saved 200M RWF tenders")
+def read_drawing_with_ai(uploaded_file):
+    """AI isoma Plan PDF/Image ikuremo Length, Width, Height"""
+    try:
+        if uploaded_file.type == "application/pdf":
+            doc = fitz.open(stream=uploaded_file.read(), filetype="pdf")
+            page = doc[0]
+            pix = page.get_pixmap()
+            img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        else:
+            img = Image.open(uploaded_file)
+
+        buffered = BytesIO()
+        img.save(buffered, format="PNG")
+        img_base64 = base64.b64encode(buffered.getvalue()).decode()
+
+        api_key = st.secrets["OPENAI_API_KEY"]
+        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
+        prompt = """Soma iyi architectural plan. Kuramo dimensions nyazo mu ma meter.
+        Subiza JSON gusa: {"length": 10.0, "width": 8.0, "height": 3.0, "notes": "ibyo wabonye"}"""
+
+        payload = {
+            "model": "gpt-4o",
+            "messages": [{"role": "user", "content": [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img_base64}"}}
+            ]}],
+            "max_tokens": 300
+        }
+
+        response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload, timeout=30)
+        content = response.json()['choices'][0]['message']['content']
+        json_match = re.search(r'\{.*\}', content, re.DOTALL)
+        if json_match:
+            dims = json.loads(json_match.group())
+            return dims['length'], dims['width'], dims['height'], dims.get('notes', 'OK')
+    except Exception as e:
+        return None, None, None, f"Error: {str(e)}"
+    return None, None, None, "AI ntiyashoboye gusoma"
+
+
 
 # LOGIN SECTION
 company = st.text_input("Andika Company yawe", placeholder="B-ESTAMER QS AI")
@@ -22,25 +72,7 @@ col3.metric("CEO Level", "3")
 
 st.divider()
 
-# BOQ GENERATOR - IKI NICYO KIBURA KURI APP YAWE
-st.title("🏗️ RPPA BOQ Auto-Checker")
-st.caption("Shyiramo dimensions → Kura BOQ + Excel mu segonda 30")
 
-c1, c2 = st.columns(2)
-with c1:
-    length = st.number_input("Uburende (m)", min_value=1.0, value=10.0, step=0.5)
-with c2:
-    width = st.number_input("Ubugari (m)", min_value=1.0, value=8.0, step=0.5)
-height = st.number_input("Ubuhagarike (m)", min_value=1.0, value=3.0, step=0.1)
-
-if st.button("🔥 GENERATE BOQ NONAHA", type="primary", use_container_width=True):
-    floor_area = length * width
-    wall_area = (length + width) * 2 * height
-    
-    data = {
-        "Item Description": ["Amatafari 15cm", "Sima 42.5R", "Umucanga Ukonje", "Fer 8mm"],
-        "Quantity": [round(wall_area * 50), round(wall_area * 0.15), round(wall_area * 0.03, 2), round(floor_area * 2.5)],
-        "Unit": ["Pcs", "Bags", "m³", "Kg"],
         "Unit Price RWF": [200, 12000, 25000, 1500]
     }
     boq = pd.DataFrame(data)
@@ -48,6 +80,54 @@ if st.button("🔥 GENERATE BOQ NONAHA", type="primary", use_container_width=Tru
     
     st.subheader("📊 BOQ YUZUYE - RPPA COMPLIANT")
     st.dataframe(boq, use_container_width=True)
+st.markdown("### 📐 RPPA BOQ Auto-Checker - AI READS DRAWINGS")
+
+uploaded_plan = st.file_uploader("📤 Shyiramo Plan PDF/JPG/PNG", type=['pdf','jpg','png','jpeg'])
+
+if uploaded_plan:
+    col1, col2 = st.columns([1,1])
+    with col1:
+        st.image(uploaded_plan, caption="Plan Yoherejwe", use_column_width=True)
+    with col2:
+        if st.button("🔥 SOMA PLAN UNKORESHE BOQ", type="primary", use_container_width=True):
+            with st.spinner("🤖 AI Irasoma plan... Tegereza amasegonda 15..."):
+                length, width, height, notes = read_drawing_with_ai(uploaded_plan)
+                if length and width and height:
+                    st.success(f"✅ Plan Yasomwe: {length}m x {width}m x {height}m")
+                    st.info(f"AI Notes: {notes}")
+                    df, total = calculate_boq(length, width, height)
+                    st.markdown("### 📊 BOQ YAVUYE MURI PLAN")
+                    st.dataframe(df, use_container_width=True)
+                    st.markdown(f"### 💰 IGICIRO CYOSE: *{total:,.0f} RWF*")
+                    st.success("✅ RPPA COMPLIANT")
+                    excel_file = generate_excel(df)
+                    st.download_button("📥 Download BOQ Excel", excel_file,
+                                     f"B_ESTAMER_BOQ_{datetime.now().strftime('%Y%m%d')}.xlsx")
+                else:
+                    st.error(f"❌ {notes}")
+
+st.markdown("---")
+st.markdown("#### ✍️ Cyangwa Andika Manual")
+col1, col2, col3 = st.columns(3)
+with col1:
+    length = st.number_input("Uburende (m)", value=10.00)
+with col2:
+    width = st.number_input("Ubugari (m)", value=8.00)
+with col3:
+    height = st.number_input("Ubuhagarike (m)", value=3.00)
+
+if st.button("🔥 GENERATE BOQ MANUAL"):
+    df, total = calculate_boq(length, width, height)
+    st.dataframe(df)
+    st.markdown(f"### 💰 TOTAL: *{total:,.0f} RWF*")
+
+
+### LINA-C: NUMARA GUSHYIRAMO CODE 🎯
+
+1. Manuka hasi → Commit message: Add AI Drawing Reader Phase 2
+2. Kanda Commit changes
+3. Jya kuri Streamlit → Settings → Secrets → Shyiramo OPENAI_API_KEY
+4. Update http://requirements.txt ongeramo PyMuPDF==1.23.8 na Pillow==10.1.0
     total = boq['Total RWF'].sum()
     st.metric("IGICIRO CYOSE CY'UMUSHINGA", f"{total:,.0f} RWF")
     
