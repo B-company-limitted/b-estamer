@@ -72,7 +72,10 @@ col3.metric("CEO Level", "3")
 
 st.divider()
 
-
+  data = {
+        "Description": ["Excavation", "Concrete", "Masonry", "Reinforcement"],
+        "Unit": ["m3","3m", "m2", "kg"],
+        "Quantity": [50, 20, 100, 500],
         "Unit Price RWF": [200, 12000, 25000, 1500]
     }
     boq = pd.DataFrame(data)
