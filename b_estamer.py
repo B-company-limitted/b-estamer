@@ -76,11 +76,12 @@ data = {
         "Unit": ["m3","m3","m2", "kg"],
         "Quantity": [50, 20, 100, 500],
         "Unit Price RWF": [200, 12000, 25000, 1500]
-    } boq = pd.DataFrame(data)
-    boq["Total RWF"] = boq["Quantity"] * boq["Unit Price RWF"]
+} 
+boq = pd.DataFrame(data)
+boq["Total RWF"] = boq["Quantity"] * boq["Unit Price RWF"]
     
-    st.subheader("📊 BOQ YUZUYE - RPPA COMPLIANT")
-    st.dataframe(boq, use_container_width=True)
+st.subheader("📊 BOQ YUZUYE - RPPA COMPLIANT")
+ st.dataframe(boq, use_container_width=True)
 st.markdown("### 📐 RPPA BOQ Auto-Checker - AI READS DRAWINGS")
 
 uploaded_plan = st.file_uploader("📤 Shyiramo Plan PDF/JPG/PNG", type=['pdf','jpg','png','jpeg'])
