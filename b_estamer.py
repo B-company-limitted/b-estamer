@@ -76,8 +76,7 @@ data = {
         "Unit": ["m3","m3","m2", "kg"],
         "Quantity": [50, 20, 100, 500],
         "Unit Price RWF": [200, 12000, 25000, 1500]
-    }
-    boq = pd.DataFrame(data)
+    } boq = pd.DataFrame(data)
     boq["Total RWF"] = boq["Quantity"] * boq["Unit Price RWF"]
     
     st.subheader("📊 BOQ YUZUYE - RPPA COMPLIANT")
@@ -124,19 +123,6 @@ if st.button("🔥 GENERATE BOQ MANUAL"):
     st.markdown(f"### 💰 TOTAL: *{total:,.0f} RWF*")
 
 
-### LINA-C: NUMARA GUSHYIRAMO CODE 🎯
-
-1. Manuka hasi → Commit message: Add AI Drawing Reader Phase 2
-2. Kanda Commit changes
-3. Jya kuri Streamlit → Settings → Secrets → Shyiramo OPENAI_API_KEY
-4. Update http://requirements.txt ongeramo PyMuPDF==1.23.8 na Pillow==10.1.0
-    total = boq['Total RWF'].sum()
-    st.metric("IGICIRO CYOSE CY'UMUSHINGA", f"{total:,.0f} RWF")
-    
-    csv = boq.to_csv(index=False).encode('utf-8')
-    st.download_button("📥 Download BOQ Excel", csv, "B-ESTAMER_BOQ.csv", "text/csv")
-    st.success("✅ RPPA COMPLIANT: Iyi BOQ yemerewe gutangwa kuri tender")
-### ALEX-D: INTAMBWE 4 NONAHA ⚡
 
 
 
