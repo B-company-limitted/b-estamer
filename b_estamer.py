@@ -1,3 +1,10 @@
+# ================================================================
+# COPYRIGHT © 2026 CEO BRUNO - B-ESTAMER PRO RWANDA V3.1
+# ALL RIGHTS RESERVED - PATENT PENDING  
+# UNAUTHORIZED COPYING, USE, OR DISTRIBUTION = 10,000,000 RWF PENALTY
+# COMMERCIAL LICENSE: WhatsApp +250787993679 | Email: uwayobruno32gmail.coml
+# RPPA COMPLIANT QS ENGINE - BUILT FOR RWANDA
+# ================================================================
 import streamlit as st
 import pandas as pd
 import pdfplumber
