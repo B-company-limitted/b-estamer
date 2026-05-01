@@ -1,6 +1,6 @@
 streamlit
 pandas
-PyMuPDF
-Pillow
-requests
-
+pdfplumber
+pytesseract
+pillow
+openpyxl
