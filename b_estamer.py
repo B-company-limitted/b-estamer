@@ -12,7 +12,10 @@ import pytesseract
 from PIL import Image
 import re
 from io import BytesIO
-
+# SOMA STEEL MURI SECRETS - ENCRYPTED
+prices_json = st.secrets["PRICES_DATA"]
+prices_dict = json.loads(prices_json)
+prices_df = pd.DataFrame(prices_dict)
 st.set_page_config(page_title="B-ESTAMER V3.1 PRO", layout="wide", initial_sidebar_state="expanded")
 
 if 'boq_df' not in st.session_state:
