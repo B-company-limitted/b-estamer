@@ -7,7 +7,7 @@
 # ================================================================
 import streamlit as st
 import pandas as pd
-import pdfplumber
+import json 
 import pytesseract
 from PIL import Image
 import re
