@@ -30,73 +30,116 @@ mode = st.sidebar.radio("Mode:", ["Auto - Soma Plan", "Manual - Andika Measureme
 profit = st.sidebar.slider("Profit Margin %", 0, 50, 15)
 
 st.sidebar.divider()
-st.sidebar.header("🧱 2. MATERIALS & RATES")
+# ========== 2. MATERIALS & RATES - FULL CEMENT & STEEL EMPIRE ==========
+st.header("2. MATERIALS & RATES")
 
-# WALL MATERIALS - INCLUDING BRICKS
-wall_material = st.sidebar.selectbox("Material y'Inkuta",
-    ["Blocks 15cm", "Blocks 20cm", "Blocks 10cm", "Amatafari", "Stone"])
+col1, col2 = st.columns(2)
 
-if "Blocks" in wall_material:
-    wall_rate = st.sidebar.number_input(f"Rate {wall_material} (RWF/Pc)", 500, 5000, 1000)
-    wall_unit = "Pcs"
-    blocks_per_m2 = 12 if "15cm" in wall_material else 10 if "20cm" in wall_material else 15
-elif "Amatafari" in wall_material:
-    wall_rate = st.sidebar.number_input("Rate Amatafari (RWF/Pc)", 100, 1000, 300)
-    wall_unit = "Pcs"
-    blocks_per_m2 = 50 # 50 bricks per m² wall
-else: # Stone
-    wall_rate = st.sidebar.number_input("Rate Stone (RWF/m3)", 10000, 50000, 25000)
-    wall_unit = "m3"
-    blocks_per_m2 = 0.15 # 0.15 m3 stone per m² wall
+with col1:
+    st.subheader("Steel Bars - R6 to Y40")
+    steel_prices = {
+        "R6": st.number_input("R6 Price RWF/kg", value=1300, key="r6"),
+        "R8": st.number_input("R8 Price RWF/kg", value=1250, key="r8"),
+        "R10": st.number_input("R10 Price RWF/kg", value=1200, key="r10"),
+        "R12": st.number_input("R12 Price RWF/kg", value=1200, key="r12"),
+        "R16": st.number_input("R16 Price RWF/kg", value=1200, key="r16"),
+        "R20": st.number_input("R20 Price RWF/kg", value=1200, key="r20"),
+        "R25": st.number_input("R25 Price RWF/kg", value=1200, key="r25"),
+        "Y32": st.number_input("Y32 Price RWF/kg", value=1350, key="y32"),
+        "Y40": st.number_input("Y40 Price RWF/kg", value=1450, key="y40")
+    }
 
-# Other Materials
-cement_type = st.sidebar.selectbox("Cement", ["Cement 32.5", "Cement 42.5"])
-cement_rate = st.sidebar.number_input(f"Rate {cement_type} (RWF/Bag)", 10000, 25000, 13000)
-steel_type = st.sidebar.selectbox("Steel", ["Steel Y12", "Steel Y10", "Steel Y16"])
-steel_rate = st.sidebar.number_input(f"Rate {steel_type} (RWF/Kg)", 1000, 3000, 1800)
-sand_rate = st.sidebar.number_input("Sand (RWF/Trip)", 30000, 150000, 70000)
-concrete_rate = st.sidebar.number_input("Concrete C20 (RWF/m3)", 100000, 200000, 140000)
-roof_type = st.sidebar.selectbox("Roofing", ["Mabati", "Tiles", "Slab"])
-roof_rate = st.sidebar.number_input(f"Rate {roof_type} (RWF/m2)", 5000, 30000, 12000)
-paint_rate = st.sidebar.number_input("Paint 3 coats (RWF/m2)", 1000, 5000, 2500)
+    steel_weights = {
+        "R6": 0.222, "R8": 0.395, "R10": 0.617, "R12": 0.888,
+        "R16": 1.580, "R20": 2.470, "R25": 3.850, "Y32": 6.310, "Y40": 9.860
+    }
 
-# 2. MAIN INPUT
-st.header("📐 3. DIMENSIONS")
-col1, col2, col3 = st.columns(3)
-length, width, height = 0, 0, 3.0
+with col2:
+    st.subheader("Cement Types & Concrete Mixes")
 
-if mode == "Auto - Soma Plan":
-    uploaded_file = st.file_uploader("Upload Plan PDF/Image", type=["pdf", "png", "jpg"])
-    if uploaded_file:
-        text = ""
-        if uploaded_file.type == "application/pdf":
+    cement_types = {
+        "CEM I 32.5N": {"price": 11500, "desc": "General purpose, plastering, masonry"},
+        "CEM I 42.5N": {"price": 12500, "desc": "Standard structure, beams, slabs"},
+        "CEM I 42.5R": {"price": 13000, "desc": "Rapid hardening, early strength"},
+        "CEM I 52.5N": {"price": 14000, "desc": "High strength, bridges, dams"},
+        "CEM II 32.5N": {"price": 11000, "desc": "Portland composite, general work"},
+        "CEM II 42.5N": {"price": 12000, "desc": "Most common, general structure"}
+    }
+
+    selected_cement = st.selectbox(
+        "Select Cement Type",
+        list(cement_types.keys()),
+        index=1,
+        help="32.5=Plastering, 42.5=Structure, 52.5=High Strength"
+    )
+
+    cement_rate = st.number_input(
+        f"{selected_cement} Price RWF/bag 50kg",
+        value=cement_types[selected_cement]["price"],
+        key="cement"
+    )
+    st.caption(f"Use: {cement_types[selected_cement]['desc']}")
+
+    mix_ratios = {
+        "C10 (1:3:6)": {"cement": 220, "sand": 0.45, "gravel": 0.90},
+        "C15 (1:2:4)": {"cement": 300, "sand": 0.42, "gravel": 0.84},
+        "C20 (1:1.5:3)": {"cement": 350, "sand": 0.40, "gravel": 0.80},
+        "C25 (1:1:2)": {"cement": 450, "sand": 0.35, "gravel": 0.70},
+        "C30 (1:1:1.5)": {"cement": 550, "sand": 0.30, "gravel": 0.60},
+        "C35 (1:1:1)": {"cement": 650, "sand": 0.25, "gravel": 0.50}
+    }
+
+    selected_mix = st.selectbox("Select Concrete Grade", list(mix_ratios.keys()), key="mix", index=2)
+    sand_rate = st.number_input("Sand Price RWF/m³", value=25000, key="sand")
+    gravel_rate = st.number_input("Gravel Price RWF/m³", value=30000, key="gravel")
+
+    concrete_mix = mix_ratios[selected_mix]
+
+# ========== 3. DIMENSIONS - FIX NAMEERROR + AUTO SCAN ==========
+st.header("3. DIMENSIONS")
+
+uploaded_file = st.file_uploader("Upload Plan PDF/Image", type=["pdf","png","jpg","jpeg"])
+
+auto_dimensions = {"length": 0, "width": 0, "height": 0}
+
+if uploaded_file is not None:
+    if uploaded_file.type == "application/pdf":
+        try:
             with pdfplumber.open(uploaded_file) as pdf:
+                st.success(f"PDF yasomwe. Pages: {len(pdf.pages)}")
+                all_text = ""
                 for page in pdf.pages:
-                    text += page.extract_text() or ""
-        else:
+                    all_text += page.extract_text() or ""
+                import re
+                numbers = re.findall(r'(\d+[.,]?\d*)\s*(m|mm|cm)', all_text.lower())
+                if numbers:
+                    st.info(f"Numbers zabonetse: {numbers[:5]}")
+                    if len(numbers) >= 1: auto_dimensions["length"] = float(numbers[0][0].replace(',','.'))
+                    if len(numbers) >= 2: auto_dimensions["width"] = float(numbers[1][0].replace(',','.'))
+        except Exception as e:
+            st.error(f"Ikosa PDF: {e}")
+
+    elif uploaded_file.type.startswith('image'):
+        try:
             image = Image.open(uploaded_file)
             text = pytesseract.image_to_string(image)
-        dims = re.findall(r'(\d+\.\d{3})', text)
-        if len(dims) >= 2:
-            length, width = float(dims[0]), float(dims[1])
-            st.success(f"Auto Detected: {length}m x {width}m")
-        else:
-            st.warning("Sinabona dimensions. Koresha Manual.")
+            st.success("Image yasomwe na OCR")
+            import re
+            numbers = re.findall(r'(\d+[.,]?\d*)\s*(m|mm|cm)', text.lower())
+            if numbers:
+                st.info(f"Numbers zabonetse: {numbers[:5]}")
+                if len(numbers) >= 1: auto_dimensions["length"] = float(numbers[0][0].replace(',','.'))
+                if len(numbers) >= 2: auto_dimensions["width"] = float(numbers[1][0].replace(',','.'))
+        except Exception as e:
+            st.error(f"Ikosa OCR: {e}")
 else:
-    length = col1.number_input("Length (m)", 1.0, 100.0, 11.401)
-    width = col2.number_input("Width (m)", 1.0, 100.0, 8.931)
-    height = col3.number_input("Wall Height (m)", 2.0, 5.0, 3.0)
+    st.info("Upload PDF/Image cyangwa andika manual")
 
-# 3. GENERATE BOQ
-if st.button("🚀 GENERATE FULL BOQ", type="primary", use_container_width=True):
-    if length > 0 and width > 0:
-        area = length * width
-        perimeter = (length + width) * 2
-        wall_area = perimeter * height
+st.subheader("Confirm/Edit Dimensions")
+length = st.number_input("Length (m)", value=float(auto_dimensions["length"]), key="len")
+width = st.number_input("Width (m)", value=float(auto_dimensions["width"]), key="wid")
+height = st.number_input("Height (m)", value=3.0, key="hei")
 
-        # QS CALCULATIONS - 25+ ITEMS NA BRICKS
-        cement_factor = 0.5 if "42.5" in cement_type else 0.6
-        wall_qty = wall_area * blocks_per_m2
 
         items = [
             ["A", "SUBSTRUCTURE", "", "", "", ""],
