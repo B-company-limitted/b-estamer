@@ -1,5 +1,5 @@
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
-# B-ESTAMER V3.14 GENIUS EMPIRE - ALL FEATURES COMBINED - All Rights Reserved
+# B-ESTAMER V3.14.1 GENIUS EMPIRE - TypeError Fixed - All Rights Reserved
 # WhatsApp/Call: 0787993679
 
 import streamlit as st
@@ -9,10 +9,9 @@ from PIL import Image
 import re
 from io import BytesIO
 
-st.set_page_config(page_title="B-ESTAMER V3.14 GENIUS EMPIRE", layout="wide")
-st.title("B-ESTAMER V3.14 GENIUS EMPIRE 🏗️🧠👑")
+st.set_page_config(page_title="B-ESTAMER V3.14.1 GENIUS EMPIRE", layout="wide")
+st.title("B-ESTAMER V3.14.1 GENIUS EMPIRE 🏗️🧠👑")
 
-# CHECK FOR SAVED PRICES
 if 'saved_prices' in st.session_state:
     sp = st.session_state['saved_prices']
     default_cement_rate = sp.get('cement_rate', 12500)
@@ -27,7 +26,6 @@ else:
     default_roof_rate = 8500
     default_concrete_rate = 180000
 
-# --- 1. MODE SELECTION ---
 st.header("1. HITAMO UBURYO")
 input_mode = st.radio(
     "Uburyo bwo gushyiramo dimensions:",
@@ -41,7 +39,6 @@ confidence = 100
 warnings = []
 valid_dims = []
 
-# --- 2A. AUTOMATIC MODE - SMART DRAWING DETECTION ---
 if input_mode == "🤖 AUTOMATIC - Soma muri PDF/Image":
     st.subheader("Upload Plan")
     uploaded_file = st.file_uploader("Shyiramo PDF/Image ya Plan", type=["pdf","png","jpg","jpeg"], key="auto_upload")
@@ -129,12 +126,10 @@ if input_mode == "🤖 AUTOMATIC - Soma muri PDF/Image":
             st.image(Image.open(uploaded_file), caption="Uploaded Plan", use_column_width=True)
             st.warning("⚠️ Auto-extract kuri image iri coming soon. Koresha MANUAL mode.")
 
-# --- 2B. MANUAL MODE ---
 else:
     st.subheader("Andika Dimensions")
     st.info("💡 Reba kuri plan yawe, andika measurements hano")
 
-# --- 3. HOUSE SPECS + MANUAL OVERRIDE ---
 st.header("2. HOUSE SPECS - GENZURA & HINDURA")
 st.caption("Niba AUTO yasomye nabi, hindura hano. Wowe ni Boss.")
 
@@ -161,7 +156,6 @@ wall_area = 2 * (length + width) * height * floors
 roof_area = area * 1.2
 slab_area = area * (floors - 1) if floors > 1 else 0
 
-# --- 4. MATERIALS - SMART GENIUS MODE ---
 st.header("3. SMART MATERIALS ENGINE 🧠⚡")
 st.caption("💡 App iratekereza: Iraguha suggestions, irabara quantities, irakuburira")
 
@@ -327,7 +321,6 @@ with st.expander("🚿 PLUMBING & FINISHES"):
         sink = st.number_input("Kitchen Sink", value=85000, step=1000)
         window_steel = st.number_input("Steel Window m²", value=45000, step=1000)
 
-# --- 5. AUTO BOQ WITH FIXED + VARIABLE COSTS ---
 st.header("4. AUTO BOQ - VARIABLE + FIXED COSTS")
 
 variable_items = [
@@ -406,8 +399,6 @@ fixed_items = [
 
 all_items = variable_items + fixed_items
 df = pd.DataFrame(all_items, columns=["Item No", "Description", "Qty", "Unit", "Rate", "Amount"])
-# FIX: CONVERT AMOUNT TO NUMERIC - IGNORE HEADERS
-df = pd.DataFrame(all_items, columns=["Item No", "Description", "Qty", "Unit", "Rate", "Amount"])
 df["Amount"] = pd.to_numeric(df["Amount"], errors='coerce').fillna(0)
 df["Qty"] = pd.to_numeric(df["Qty"], errors='coerce').fillna(0)
 df["Rate"] = pd.to_numeric(df["Rate"], errors='coerce').fillna(0)
@@ -431,29 +422,6 @@ col_t2.metric("FIXED COSTS", f"{fixed_total:,.0f} RWF")
 col_t3.metric("SUB TOTAL", f"{subtotal:,.0f} RWF")
 col_t4.metric("GRAND TOTAL", f"{grand_total:,.0f} RWF")
 
-
-4. STOP: Uhagarara kuri col_t4.metric...  
-Line 428 # --- 6. EXCEL EXPORT --- NTUYIKOREHO
-variable_total = df[df["Description"].str.contains("VARIABLE|MIXED", na=False)]["Amount"].sum()
-fixed_total = df[df["Description"].str.contains("FIXED", na=False)]["Amount"].sum()
-subtotal = df[df["Amount"]!= ""]["Amount"].sum()
-vat = subtotal * 0.18
-grand_total = subtotal + vat
-
-if floors > 1:
-    st.info(f"🏢 ETAGE BOQ: R+{floors-1} | Variable: {variable_total:,.0f} RWF | Fixed: {fixed_total:,.0f} RWF")
-else:
-    st.info(f"🏠 GROUND BOQ: Variable: {variable_total:,.0f} RWF | Fixed: {fixed_total:,.0f} RWF")
-
-st.dataframe(df, use_container_width=True)
-
-col_t1, col_t2, col_t3, col_t4 = st.columns(4)
-col_t1.metric("VARIABLE COSTS", f"{variable_total:,.0f} RWF")
-col_t2.metric("FIXED COSTS", f"{fixed_total:,.0f} RWF")
-col_t3.metric("SUB TOTAL", f"{subtotal:,.0f} RWF")
-col_t4.metric("GRAND TOTAL", f"{grand_total:,.0f} RWF")
-
-# --- 6. EXCEL EXPORT ---
 st.header("5. DOWNLOAD EXCEL")
 
 def to_excel(df):
@@ -472,7 +440,6 @@ st.download_button(
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
 
-# --- 7. SAVE/LOAD PRICE LIST ---
 st.header("6. SAVE/LOAD PRICE LIST 💾")
 st.caption("Bika igiciro cyawe kugirango utongera kwandika buri gihe")
 
@@ -497,7 +464,6 @@ with col_save2:
         else:
             st.warning("⚠️ Nta Price List urabika. Banza ukande 'Bika Price List'")
 
-# --- 8. SHOW CALCULATIONS - BUILD TRUST ---
 st.header("7. UKO TWABAZE - VERIFY NONAHA ✅")
 st.caption("Reba formula zose. Niba hari itari yo, hindura hejuru.")
 
@@ -535,7 +501,6 @@ GRAND TOTAL = {grand_total:,.0f} RWF
 
 st.success("✅ Niba formula zose ari zo, BOQ ni yo 100%. Niba hari itari yo, hindura prices/sizes hejuru.")
 
-# --- 9. SANITY CHECK - COMPARE NA FUNDI ---
 st.header("8. SANITY CHECK - GERERANYA NA FUNDI 👷")
 st.caption("Niba fundi aguhaye BOQ, gereranya hano:")
 col_check1, col_check2 = st.columns(2)
@@ -565,4 +530,4 @@ Accuracy ishingiye kuri: 1) PDF nziza 2) Prices z'ukuri 3) Verification yawe.
 © 2026 BRUNO CONSTRUCTION EMPIRE LTD - All Rights Reserved
 """)
 
-st.success(f"B-ESTAMER V3.14 GENIUS EMPIRE READY 💣 | AI Confidence: {confidence}%")
+st.success(f"B-ESTAMER V3.14.1 GENIUS EMPIRE READY 💣 | AI Confidence: {confidence}%")
