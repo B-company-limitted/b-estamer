@@ -1,7 +1,7 @@
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
 # B-ESTAMER V3.6 AUTO + MANUAL MODE EMPIRE - All Rights Reserved
 # Unauthorized copying, modification, distribution prohibited
-# Contact: +250787993679 | WhatsApp Business
+# Contact: +250788000000 | WhatsApp Business
 
 import streamlit as st
 import pandas as pd
@@ -20,7 +20,7 @@ input_mode = st.radio(
     horizontal=True
 )
 
-auto_dimensions = {"length": 0, "width": 0, "height": 3.0, "rooms": 3}
+auto_dimensions = {"length": 0.0, "width": 0.0, "height": 3.0, "rooms": 3}
 uploaded_file = None
 
 # --- 2A. AUTOMATIC MODE ---
@@ -43,12 +43,12 @@ if input_mode == "🤖 AUTOMATIC - Soma muri PDF/Image":
                     st.info(f"📐 Numbers zabonetse: {numbers[:5]}")
                     if len(numbers) >= 1:
                         auto_dimensions["length"] = float(numbers[0][0].replace(',','.'))
-                        if numbers[0][1] == 'mm': auto_dimensions["length"] /= 1000
-                        elif numbers[0][1] == 'cm': auto_dimensions["length"] /= 100
+                        if numbers[0][1] == 'mm': auto_dimensions["length"] /= 1000.0
+                        elif numbers[0][1] == 'cm': auto_dimensions["length"] /= 100.0
                     if len(numbers) >= 2:
                         auto_dimensions["width"] = float(numbers[1][0].replace(',','.'))
-                        if numbers[1][1] == 'mm': auto_dimensions["width"] /= 1000
-                        elif numbers[1][1] == 'cm': auto_dimensions["width"] /= 100
+                        if numbers[1][1] == 'mm': auto_dimensions["width"] /= 1000.0
+                        elif numbers[1][1] == 'cm': auto_dimensions["width"] /= 100.0
                     if len(numbers) >= 3:
                         auto_dimensions["height"] = float(numbers[2][0].replace(',','.'))
 
@@ -70,20 +70,20 @@ st.caption("Values zavuye muri PDF ziba zanditse. Uhindure niba bidakwiye.")
 
 col_h1, col_h2, col_h3, col_h4 = st.columns(4)
 with col_h1:
-    length = st.number_input("Length (m)", value=auto_dimensions["length"], min_value=0.0, step=0.1, key="len")
-    if input_mode == "🤖 AUTOMATIC - Soma muri PDF/Image" and length == 0:
+    length = st.number_input("Length (m)", value=float(auto_dimensions["length"]), min_value=0.0, step=0.1, key="len")
+    if input_mode == "🤖 AUTOMATIC - Soma muri PDF/Image" and length == 0.0:
         st.error("❌ Length ntiyabonetse muri PDF. Andika manual.")
 with col_h2:
-    width = st.number_input("Width (m)", value=auto_dimensions["width"], min_value=0.0, step=0.1, key="wid")
-    if input_mode == "🤖 AUTOMATIC - Soma muri PDF/Image" and width == 0:
+    width = st.number_input("Width (m)", value=float(auto_dimensions["width"]), min_value=0.0, step=0.1, key="wid")
+    if input_mode == "🤖 AUTOMATIC - Soma muri PDF/Image" and width == 0.0:
         st.error("❌ Width ntiyabonetse muri PDF. Andika manual.")
 with col_h3:
-    height = st.number_input("Wall Height (m)", value=auto_dimensions["height"], min_value=2.0, step=0.1, key="hei")
+    height = st.number_input("Wall Height (m)", value=float(auto_dimensions["height"]), min_value=2.0, step=0.1, key="hei")
 with col_h4:
-    rooms = st.number_input("No. of Rooms", value=auto_dimensions["rooms"], min_value=1, step=1, key="rooms")
+    rooms = st.number_input("No. of Rooms", value=int(auto_dimensions["rooms"]), min_value=1, step=1, key="rooms")
 
 if input_mode == "🤖 AUTOMATIC - Soma muri PDF/Image":
-    if length > 0 and width > 0:
+    if length > 0.0 and width > 0.0:
         st.success(f"🤖 AUTO MODE: {length}m x {width}m x {height}m | {rooms} rooms")
     else:
         st.warning("⚠️ AUTO MODE: PDF ntiyatanze dimensions zose. Uzuza izisigaye manual.")
@@ -189,9 +189,9 @@ roof_rate = versatile if roof_type == "Versatile" else it4 if roof_type == "IT4"
 if block_type == "9in Block":
     block_rate, block_qty = block_9in, 12.5
 elif block_type == "6in Block":
-    block_rate, block_qty = block_6in, 15
+    block_rate, block_qty = block_6in, 15.0
 else:
-    block_rate, block_qty = brick, 50
+    block_rate, block_qty = brick, 50.0
 
 items = [
     ["A", "SUBSTRUCTURE", "", "", "", ""],
