@@ -406,7 +406,34 @@ fixed_items = [
 
 all_items = variable_items + fixed_items
 df = pd.DataFrame(all_items, columns=["Item No", "Description", "Qty", "Unit", "Rate", "Amount"])
+# FIX: CONVERT AMOUNT TO NUMERIC - IGNORE HEADERS
+df = pd.DataFrame(all_items, columns=["Item No", "Description", "Qty", "Unit", "Rate", "Amount"])
+df["Amount"] = pd.to_numeric(df["Amount"], errors='coerce').fillna(0)
+df["Qty"] = pd.to_numeric(df["Qty"], errors='coerce').fillna(0)
+df["Rate"] = pd.to_numeric(df["Rate"], errors='coerce').fillna(0)
 
+variable_total = df[df["Description"].str.contains("VARIABLE|MIXED", na=False)]["Amount"].sum()
+fixed_total = df[df["Description"].str.contains("FIXED", na=False)]["Amount"].sum()
+subtotal = df["Amount"].sum()
+vat = subtotal * 0.18
+grand_total = subtotal + vat
+
+if floors > 1:
+    st.info(f"🏢 ETAGE BOQ: R+{floors-1} | Variable: {variable_total:,.0f} RWF | Fixed: {fixed_total:,.0f} RWF")
+else:
+    st.info(f"🏠 GROUND BOQ: Variable: {variable_total:,.0f} RWF | Fixed: {fixed_total:,.0f} RWF")
+
+st.dataframe(df, use_container_width=True)
+
+col_t1, col_t2, col_t3, col_t4 = st.columns(4)
+col_t1.metric("VARIABLE COSTS", f"{variable_total:,.0f} RWF")
+col_t2.metric("FIXED COSTS", f"{fixed_total:,.0f} RWF")
+col_t3.metric("SUB TOTAL", f"{subtotal:,.0f} RWF")
+col_t4.metric("GRAND TOTAL", f"{grand_total:,.0f} RWF")
+
+
+4. STOP: Uhagarara kuri col_t4.metric...  
+Line 428 # --- 6. EXCEL EXPORT --- NTUYIKOREHO
 variable_total = df[df["Description"].str.contains("VARIABLE|MIXED", na=False)]["Amount"].sum()
 fixed_total = df[df["Description"].str.contains("FIXED", na=False)]["Amount"].sum()
 subtotal = df[df["Amount"]!= ""]["Amount"].sum()
