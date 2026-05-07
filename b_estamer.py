@@ -15,7 +15,7 @@ st.title("B-ESTAMER V3.3 CEMENT & STEEL EMPIRE 👑")
 
 # --- 1. PDF/IMAGE UPLOAD SECTION ---
 st.header("1. UPLOAD PLAN")
-uploaded_file = st.file_uploader("Upload Plan PDF/Image", type=["pdf","png","jpg","jpeg"…
+uploaded_file = st.file_uploader("Upload Plan PDF/Image", type=["pdf","png","jpg","jpeg"],key="auto_upload
 [9:36 AM, 5/7/2026] B The Gaint: MOSES-I: CEO BRUNO, CODE YUZUYE V3.6 "AUTO + MANUAL" EMPIRE 🔥👑
 
 Copy-Paste iyi code yose uko yakabaye muri b_estamer.py. Simbuza ibindi byose.
