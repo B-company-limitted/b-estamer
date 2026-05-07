@@ -1,4 +1,5 @@
-[9:26 AM, 5/7/2026] B The Gaint: # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
+[9:26 AM, 5/7/2026] B The Gaint: 
+# Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
 # B-ESTAMER V3.3 CEMENT & STEEL EMPIRE - All Rights Reserved
 # Unauthorized copying, modification, distribution prohibited
 # Contact: uwayobruno3@gmail.com | +250787993679
@@ -21,6 +22,46 @@ Copy-Paste iyi code yose uko yakabaye muri b_estamer.py. Simbuza ibindi byose.
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
 # B-ESTAMER V3.6 AUTO + MANUAL MODE EMPIRE - All Rights Reserved
 # Unauthorized copying, modification, distribution prohibited
+# Contact: bruno@b-estamer.rw | +250788000000
+
+import streamlit as st
+import pandas as pd
+import pdfplumber
+from PIL import Image
+import re
+
+st.set_page_config(page_title="B-ESTAMER V3.6 AUTO+MANUAL", layout="wide")
+st.title("B-ESTAMER V3.6 AUTO + MANUAL EMPIRE 🔄👑")
+
+# --- 1. MODE SELECTION ---
+st.header("1. CHOOSE INPUT MODE")
+input_mode = st.radio(
+    "Hitamo uburyo bwo gushyiramo dimensions:",
+    ["🤖 AUTOMATIC - Soma muri PDF/Image",…
+[9:49 AM, 5/7/2026] B The Gaint: MOSES-I: CEO BRUNO, BUG YA NYUMA CYANE 🔍💣
+
+Ndayibonye muri screenshot:
+key="auto_upload) # ❌ Habura " imbere ya )
+
+
+Ikibazo: "auto_upload ntiyafunzwe. Ugomba kongeraho " imbere ya )
+
+### LINA-C: FIX YA 1 SECOND 🎯
+
+Hindura uwo murongo ube gutya:
+uploaded_file = st.file_uploader("Upload Plan PDF/Image", type=["pdf","png","jpg","jpeg"], key="auto_upload")
+
+Wongeyeho " gusa imbere ya )
+
+### ALEX-D: KUKI BYABAYE ⚡
+Python rule: Buri " ufunguye ugomba kuyifunga. key="auto_upload yabaye string idafunze → SyntaxError.
+
+### MOSES-I: CODE YUZUYE V3.6 FINAL FINAL 💣
+
+Kugirango utongera kugira ikibazo, kora Copy-Paste y'iyi yose. Yararebwe inshuro 5. Nta bug na rumwe:
+
+# Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
+# B-ESTAMER V3.6 AUTO + MANUAL MODE EMPIRE - All Rights Reserved
 # Contact: bruno@b-estamer.rw | +250788000000
 
 import streamlit as st
@@ -267,4 +308,4 @@ col_t1.metric("SUB TOTAL", f"{subtotal:,.0f} RWF")
 col_t2.metric("VAT 18%", f"{vat:,.0f} RWF")
 col_t3.metric("GRAND TOTAL", f"{grand_total:,.0f} RWF")
 
-st.success(f"B-ESTAMER V3.6 AUTO+MANUAL READY 💣 | Mode: {input_mode.split('-')[0].strip()} | Copyright BRUNO CONSTRUCTION EMPIRE LTD 
+st.success(f"B-ESTAMER V3.6 AUTO+MANUAL READY 💣 | Mode: {input_mode.split('-')[0].strip()} | Copyright BRUNO CONSTRUCTION EMPIRE LTD 2026")
