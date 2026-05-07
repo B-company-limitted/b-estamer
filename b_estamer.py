@@ -139,9 +139,7 @@ st.subheader("Confirm/Edit Dimensions")
 length = st.number_input("Length (m)", value=float(auto_dimensions["length"]), key="len")
 width = st.number_input("Width (m)", value=float(auto_dimensions["width"]), key="wid")
 height = st.number_input("Height (m)", value=3.0, key="hei")
-
-
-        items = [
+items = [
             ["A", "SUBSTRUCTURE", "", "", "", ""],
             [1, "Site Clearance", area, "m²", 500, area * 500],
             [2, "Excavation foundation", area * 0.5, "m3", 3000, area * 0.5 * 3000],
