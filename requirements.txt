@@ -1,6 +1,5 @@
 streamlit
 pandas
-pdfplumber
-pytesseract
-pillow
 openpyxl
+pdfplumber
+PyMuPDF
