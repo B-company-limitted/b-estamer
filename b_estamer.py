@@ -1,5 +1,5 @@
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
-# B-ESTAMER V4.3 - MIX RATIO + ALL STEEL + BRICK + STONE | 0787993679
+# B-ESTAMER V4.3 FINAL - MIX RATIO + ALL STEEL + BRICK + STONE | 0787993679
 
 import streamlit as st
 import pandas as pd
@@ -30,19 +30,19 @@ if 'materials' not in st.session_state:
         {"Section":"Cement","Item":"Cement CEM II 42.5N","Unit":"bag","Rate":12500,"Weight":50},
         {"Section":"Cement","Item":"Cement CEM I 52.5N","Unit":"bag","Rate":14500,"Weight":50},
 
-        # ===== SAND & STONE =====
-        {"Section":"Aggregates","Item":"River Sand","Unit":"m³","Rate":25000,"Density":1600},
-        {"Section":"Aggregates","Item":"Stone 20mm","Unit":"m³","Rate":32000,"Density":1450},
-        {"Section":"Aggregates","Item":"Stone 40mm","Unit":"m³","Rate":30000,"Density":1400},
-        {"Section":"Aggregates","Item":"Quarry Dust","Unit":"m³","Rate":18000},
+        # ===== SAND AND STONE =====
+        {"Section":"Aggregates","Item":"River Sand","Unit":"m3","Rate":25000,"Density":1600},
+        {"Section":"Aggregates","Item":"Stone 20mm","Unit":"m3","Rate":32000,"Density":1450},
+        {"Section":"Aggregates","Item":"Stone 40mm","Unit":"m3","Rate":30000,"Density":1400},
+        {"Section":"Aggregates","Item":"Quarry Dust","Unit":"m3","Rate":18000},
 
-        # ===== BRICK =====
+        # ===== BRICK SECTION =====
         {"Section":"Brick","Item":"Clay Brick 6 inch","Unit":"pc","Rate":250},
         {"Section":"Brick","Item":"Clay Brick 4 inch","Unit":"pc","Rate":180},
         {"Section":"Brick","Item":"Concrete Block 23cm","Unit":"pc","Rate":1000},
         {"Section":"Brick","Item":"Concrete Block 15cm","Unit":"pc","Rate":800},
 
-        # ===== STEEL BARS - ALL SIZES =====
+        # ===== STEEL BARS ALL SIZES =====
         {"Section":"Steel","Item":"R6 Stirrups","Unit":"kg","Rate":1350,"Dia":6,"Weight_per_m":0.222},
         {"Section":"Steel","Item":"R8 Stirrups","Unit":"kg","Rate":1320,"Dia":8,"Weight_per_m":0.395},
         {"Section":"Steel","Item":"R10 Steel","Unit":"kg","Rate":1300,"Dia":10,"Weight_per_m":0.617},
@@ -55,72 +55,72 @@ if 'materials' not in st.session_state:
         {"Section":"Steel","Item":"Binding Wire","Unit":"kg","Rate":2000},
 
         # ===== CONCRETE =====
-        {"Section":"Concrete","Item":"Concrete C25","Unit":"m³","Rate":180000},
-        {"Section":"Concrete","Item":"Concrete C30","Unit":"m³","Rate":210000},
+        {"Section":"Concrete","Item":"Concrete C25","Unit":"m3","Rate":180000},
+        {"Section":"Concrete","Item":"Concrete C30","Unit":"m3","Rate":210000},
 
         # ===== FINISHING =====
-        {"Section":"Finishing","Item":"Plaster Sand","Unit":"m³","Rate":28000},
-        {"Section":"Finishing","Item":"Ceramic Tile","Unit":"m²","Rate":12000},
-        {"Section":"Finishing","Item":"Paint Emulsion","Unit":"m²","Rate":1300},
-        {"Section":"Finishing","Item":"Mabati G30","Unit":"m²","Rate":8500},
+        {"Section":"Finishing","Item":"Plaster Sand","Unit":"m3","Rate":28000},
+        {"Section":"Finishing","Item":"Ceramic Tile","Unit":"m2","Rate":12000},
+        {"Section":"Finishing","Item":"Paint Emulsion","Unit":"m2","Rate":1300},
+        {"Section":"Finishing","Item":"Mabati G30","Unit":"m2","Rate":8500},
 
         # ===== MEP =====
         {"Section":"MEP","Item":"PPR 20mm Pipe","Unit":"m","Rate":2500},
         {"Section":"MEP","Item":"2.5mm Cable","Unit":"m","Rate":1200},
         {"Section":"MEP","Item":"Socket Outlet","Unit":"pc","Rate":3500},
 
-        # ===== DOORS/WINDOWS =====
+        # ===== DOORS AND WINDOWS =====
         {"Section":"Doors_Windows","Item":"Steel Door 90x210","Unit":"pc","Rate":95000},
-        {"Section":"Doors_Windows","Item":"Aluminium Window","Unit":"m²","Rate":65000},
+        {"Section":"Doors_Windows","Item":"Aluminium Window","Unit":"m2","Rate":65000},
     ])
 
 # ============= CONSTRAINTS =============
 if 'constraints' not in st.session_state:
     st.session_state['constraints'] = {
-        "Cement Bags per m³ C25": 6.5,
-        "Sand m³ per m³ Concrete": 0.4,
-        "Stone m³ per m³ Concrete": 0.8,
-        "Bricks per m² 6inch Wall": 60,
-        "Bricks per m² 4inch Wall": 40,
-        "Blocks per m² 23cm": 12.5,
-        "Concrete Waste %": 5,
-        "Steel Waste %": 3,
-        "Brick Waste %": 8,
+        "Cement Bags per m3 C25": 6.5,
+        "Sand m3 per m3 Concrete": 0.4,
+        "Stone m3 per m3 Concrete": 0.8,
+        "Bricks per m2 6inch Wall": 60,
+        "Bricks per m2 4inch Wall": 40,
+        "Blocks per m2 23cm": 12.5,
+        "Concrete Waste Percent": 5,
+        "Steel Waste Percent": 3,
+        "Brick Waste Percent": 8,
     }
 
-tabs = st.tabs(["⚙️ Mix Ratio Calc", "📊 Materials", "⚙️ Constraints", "✍️ Takeoff", "🧮 BOQ"])
+tabs = st.tabs(["Mix Ratio Calc", "Materials", "Constraints", "Takeoff", "BOQ"])
 
 # ===== TAB 1: MIX RATIO CALCULATOR =====
 with tabs[0]:
-    st.header("Mix Ratio Calculator - Auto Bags/M³")
+    st.header("Mix Ratio Calculator - Auto Bags per m3")
 
     col1, col2, col3 = st.columns(3)
     with col1:
         mix = st.selectbox("Select Mix Ratio", list(MIX_RATIOS.keys()))
     with col2:
-        volume = st.number_input("Volume m³", 10.0, step=1.0)
+        volume = st.number_input("Volume m3", 10.0, step=1.0)
     with col3:
-        waste = st.number_input("Waste %", 5.0, step=1.0)
+        waste = st.number_input("Waste Percent", 5.0, step=1.0)
 
-    if st.button("🧮 Calculate Materials", type="primary"):
+    if st.button("Calculate Materials", type="primary"):
         ratio = MIX_RATIOS[mix]
         total_parts = sum(ratio.values())
 
-        st.subheader(f"Materials for {volume} m³ of {mix}")
+        st.subheader(f"Materials for {volume} m3 of {mix}")
 
         results = []
         if "Cement" in ratio:
-            cement_bags = (volume * ratio["Cement"] / total_parts * 2400) / 50 # 2400kg = 1m³ concrete
+            cement_bags = (volume * ratio["Cement"] / total_parts * 2400) / 50
             cement_bags = cement_bags * (1 + waste/100)
             results.append(["Cement", round(cement_bags,1), "bags"])
 
         if "Sand" in ratio:
             sand_m3 = volume * ratio["Sand"] / total_parts * (1 + waste/100)
-            results.append(["River Sand", round(sand_m3,2), "m³"])
+            results.append(["River Sand", round(sand_m3,2), "m3"])
 
         if "Stone" in ratio:
             stone_m3 = volume * ratio["Stone"] / total_parts * (1 + waste/100)
-            results.append(["Stone 20mm", round(stone_m3,2), "m³"])
+            results.append(["Stone 20mm", round(stone_m3,2), "m3"])
 
         if "Water" in ratio:
             water_liters = volume * ratio["Water"] * 1000
@@ -128,8 +128,7 @@ with tabs[0]:
 
         st.dataframe(pd.DataFrame(results, columns=["Material","Qty","Unit"]), use_container_width=True)
 
-        # Add to takeoff
-        if st.button("➕ Add to Takeoff List"):
+        if st.button("Add to Takeoff List"):
             for r in results:
                 st.session_state.setdefault('measurements', []).append({
                     "Section":"Concrete", "Item":r[0], "Qty":r[1], "Unit":r[2]
@@ -138,7 +137,7 @@ with tabs[0]:
 
 # ===== TAB 2: MATERIALS TABLE =====
 with tabs[1]:
-    st.header("Complete Materials Database - 50+ Items")
+    st.header("Complete Materials Database")
 
     section = st.selectbox("Filter Section", ["All"] + list(st.session_state['materials']['Section'].unique()))
     df_mat = st.session_state['materials']
@@ -174,7 +173,7 @@ with tabs[3]:
         unit = st.session_state['materials'][st.session_state['materials']['Item']==item]['Unit'].iloc[0]
         st.text_input("Unit", unit, disabled=True)
 
-    if st.button("➕ Add"):
+    if st.button("Add Item"):
         st.session_state['measurements'].append({"Section":section, "Item":item, "Qty":qty, "Unit":unit})
         st.rerun()
 
@@ -198,10 +197,9 @@ with tabs[4]:
             rate = mat['Rate']
             qty = row['Qty']
 
-            # Apply waste
-            if row['Section'] == "Steel": waste = cons['Steel Waste %']/100
-            elif row['Section'] == "Brick": waste = cons['Brick Waste %']/100
-            elif row['Section'] == "Concrete": waste = cons['Concrete Waste %']/100
+            if row['Section'] == "Steel": waste = cons['Steel Waste Percent']/100
+            elif row['Section'] == "Brick": waste = cons['Brick Waste Percent']/100
+            elif row['Section'] == "Concrete": waste = cons['Concrete Waste Percent']/100
             else: waste = 0.05
 
             gross_qty = qty * (1 + waste)
@@ -209,7 +207,7 @@ with tabs[4]:
 
             boq.append({
                 "Section":row['Section'], "Item":row['Item'],
-                "Net Qty":qty, "Waste %":waste*100,
+                "Net Qty":qty, "Waste Percent":waste*100,
                 "Gross Qty":round(gross_qty,2), "Unit":row['Unit'],
                 "Rate":rate, "Amount":round(amount,0)
             })
@@ -229,7 +227,6 @@ with tabs[4]:
         fig = px.pie(df_boq, values='Amount', names='Section', title="Cost by Section")
         st.plotly_chart(fig, use_container_width=True)
 
-        # Export
         def to_excel():
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
@@ -237,18 +234,7 @@ with tabs[4]:
                 st.session_state['materials'].to_excel(writer, index=False, sheet_name='Materials')
             return output.getvalue()
 
-        st.download_button("📥 Download Excel", to_excel(), "B-ESTAMER_4.3.xlsx")
+        st.download_button("Download Excel", to_excel(), "B-ESTAMER_4.3.xlsx")
 
 st.divider()
-st.caption("B-ESTAMER 4.3 | Brick + All Steel + Mix Ratios | 0787993679")
-### Steel Bars ziri imbere:
-R6, R8, R10, Y12, Y16, Y20, Y25, Y32, Y40 + Binding Wire. Buri imwe ifite Dia na Weight_per_m.
-
-### Mix Ratios ziri imbere:
-C15 1:3:6, C20 1:2:4, C25 1:2:3, C30 1:1.5:3, C35 1:1:2 + Mortar 1:3, 1:4, 1:5, 1:6
-
-### Bricks:
-Clay Brick 6inch, 4inch + Concrete Block 23cm, 15cm
-
-### Stone:
-Stone 20mm, Stone 40mm + River Sand + Quarry Dust
+st.caption("B-ESTAMER 4.3 FINAL | All Steel + Brick + Mix Ratios | 0787993679")
