@@ -1,240 +1,437 @@
-# Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
-# B-ESTAMER V4.3 FINAL - MIX RATIO + ALL STEEL + BRICK + STONE | 0787993679
+### BEStamer v9 - Excel Export + All Features MQL4
 
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-from io import BytesIO
+//+------------------------------------------------------------------+
+//| BEStamer v9 Ultimate.mq4 |
+//| Excel Export.CSV + Full Materials + Auto/Manual Drawing |
+//+------------------------------------------------------------------+
+#property strict
+#property indicator_chart_window
 
-st.set_page_config(page_title="B-ESTAMER 4.3", layout="wide")
-st.title("B-ESTAMER 4.3 MIX RATIO CALCULATOR 🏗️")
-st.caption("Brick + All Steel + Cement + Sand + Stone + Mix Ratios")
+//--- MATERIALS ZOSE 20 + SUBTYPES
+string MainMaterials[] = {
+   "CEMENT","SAND","GRAVEL","STEEL_BAR","BRICKS",
+   "TIMBER","IRON_SHEET","PAINT","TILES","NAILS",
+   "CONCRETE","GLASS","PVC_PIPES","WIRES","BLOCKS",
+   "WATERPROOF","CEILING","DOORS","WINDOWS","AGGREGATE"
+};
 
-# ============= MIX RATIO DATABASE =============
-MIX_RATIOS = {
-    "C15 1:3:6": {"Cement":1, "Sand":3, "Stone":6, "Water":0.5},
-    "C20 1:2:4": {"Cement":1, "Sand":2, "Stone":4, "Water":0.5},
-    "C25 1:2:3": {"Cement":1, "Sand":2, "Stone":3, "Water":0.5},
-    "C30 1:1.5:3": {"Cement":1, "Sand":1.5, "Stone":3, "Water":0.45},
-    "C35 1:1:2": {"Cement":1, "Sand":1, "Stone":2, "Water":0.4},
-    "Mortar 1:3": {"Cement":1, "Sand":3},
-    "Mortar 1:4": {"Cement":1, "Sand":4},
-    "Mortar 1:5": {"Cement":1, "Sand":5},
-    "Mortar 1:6": {"Cement":1, "Sand":6},
+string SubTypes_CEMENT[] = {"CEM I 42.5R","CEM II 32.5N","WHITE_CEMENT","QUICK_SET","PORTLAND"};
+string SubTypes_SAND[] = {"RIVER_SAND","CRUSHED_SAND","PLASTER_SAND","FILLING_SAND"};
+string SubTypes_GRAVEL[] = {"10MM","20MM","25MM","40MM","BALLAST"};
+string SubTypes_STEEL_BAR[] = {"D8","D10","D12","D16","D20","D25","D32"};
+string SubTypes_BRICKS[] = {"CLAY_BURNED","CEMENT_BLOCK","HOLLOW_BLOCK","PAVERS","FACE_BRICK"};
+string SubTypes_TIMBER[] = {"HARDWOOD","SOFTWOOD","PLYWOOD","MDF","CYPRESS","PINE"};
+string SubTypes_IRON_SHEET[] = {"VERSATILE","CORRUGATED","IT4","RESINCOT","GAUGE_28","GAUGE_30"};
+string SubTypes_PAINT[] = {"WATER_BASED","OIL_BASED","WEATHER_GUARD","UNDERCOAT","VARNISH"};
+string SubTypes_TILES[] = {"CERAMIC","PORCELAIN","GRANITE","MARBLE","PVC_TILE"};
+string SubTypes_NAILS[] = {"1_INCH","2_INCH","3_INCH","4_INCH","ROOFING_NAIL","CONCRETE_NAIL"};
+string SubTypes_CONCRETE[] = {"C15","C20","C25","C30","READY_MIX"};
+string SubTypes_GLASS[] = {"4MM_CLEAR","5MM_TINTED","6MM_LAMINATED","MIRROR","FROSTED"};
+string SubTypes_PVC_PIPES[] = {"1/2_INCH","3/4_INCH","1_INCH","2_INCH","4_INCH","WASTE_PIPE"};
+string SubTypes_WIRES[] = {"1.5MM","2.5MM","4MM","6MM","10MM","TWIN_EARTH"};
+string SubTypes_BLOCKS[] = {"SOLID_6","SOLID_9","HOLLOW_6","HOLLOW_9","VENT_BLOCK"};
+string SubTypes_WATERPROOF[] = {"BITUMEN","APP","CEMENTITIOUS","LIQUID_MEMBRANE"};
+string SubTypes_CEILING[] = {"GYPSUM","PVC","ACOUSTIC","WOODEN","SUSPENDED"};
+string SubTypes_DOORS[] = {"FLUSH","PANEL","STEEL","GLASS_DOOR","PVC_DOOR"};
+string SubTypes_WINDOWS[] = {"SLIDING","CASEMENT","LOUVER","ALUMINIUM","WOODEN"};
+string SubTypes_AGGREGATE[] = {"DUST","CHIPS","COARSE","FINE","CRUSHED_STONE"};
+
+//--- Settings
+input string DrawingSettings = "===== DRAWING READER =====";
+input bool ReadAutoDrawing = true;
+input bool ReadManualDrawing = true;
+input string AutoPrefix = "Auto_";
+
+input string ExcelSettings = "===== EXCEL EXPORT =====";
+input bool AutoExportExcel = true; // Yandike muri Excel buri break
+input string FileName = "BEStamer_BOQ.csv"; // Izina rya file
+
+input string QtySettings = "===== HIGH CAPACITY QTY =====";
+input long MaxQuantity = 999999999;
+input int DefaultQty = 100;
+
+string SelectedMain = "";
+string SelectedSub = "";
+long SelectedQty = 0;
+int SelectedMainIndex = -1;
+int ExportCount = 0;
+
+//+------------------------------------------------------------------+
+int OnInit(){
+   CreateMainPanel();
+   CreateQtyPanel();
+   CreateExcelButton();
+   InitExcelFile(); // Kora file ya Excel niba idahari
+   LoadSavedSelection();
+   Print("BEStamer v9 Excel Ready. File: ",FileName);
+   return(INIT_SUCCEEDED);
 }
 
-# ============= FULL MATERIALS DATABASE =============
-if 'materials' not in st.session_state:
-    st.session_state['materials'] = pd.DataFrame([
-        # ===== CEMENT =====
-        {"Section":"Cement","Item":"Cement CEM II 42.5N","Unit":"bag","Rate":12500,"Weight":50},
-        {"Section":"Cement","Item":"Cement CEM I 52.5N","Unit":"bag","Rate":14500,"Weight":50},
+void OnDeinit(const int reason){ SaveSelection(); ObjectsDeleteAll(0,"PANEL_"); ObjectsDeleteAll(0,"BTN_"); }
 
-        # ===== SAND AND STONE =====
-        {"Section":"Aggregates","Item":"River Sand","Unit":"m3","Rate":25000,"Density":1600},
-        {"Section":"Aggregates","Item":"Stone 20mm","Unit":"m3","Rate":32000,"Density":1450},
-        {"Section":"Aggregates","Item":"Stone 40mm","Unit":"m3","Rate":30000,"Density":1400},
-        {"Section":"Aggregates","Item":"Quarry Dust","Unit":"m3","Rate":18000},
+//+------------------------------------------------------------------+
+void OnTick(){
+   if(!IsNewCandle()) return;
+   ReadAllDrawings();
+   UpdateInfoPanel();
+}
 
-        # ===== BRICK SECTION =====
-        {"Section":"Brick","Item":"Clay Brick 6 inch","Unit":"pc","Rate":250},
-        {"Section":"Brick","Item":"Clay Brick 4 inch","Unit":"pc","Rate":180},
-        {"Section":"Brick","Item":"Concrete Block 23cm","Unit":"pc","Rate":1000},
-        {"Section":"Brick","Item":"Concrete Block 15cm","Unit":"pc","Rate":800},
+//+------------------------------------------------------------------+
+void OnChartEvent(const int id, const long &lparam, const double &dparam, const string &sparam){
+   if(id == CHARTEVENT_OBJECT_CLICK){
+      // MAIN MATERIAL
+      for(int i=0; i<ArraySize(MainMaterials); i++){
+         if(sparam == "BTN_MAIN_"+MainMaterials[i]){
+            SelectedMain = MainMaterials[i];
+            SelectedMainIndex = i;
+            SelectedSub = "";
+            DeleteSubPanel();
+            CreateSubPanel(i);
+            HighlightMainButton(i);
+            return;
+         }
+      }
+      
+      // SUB TYPE
+      if(StringFind(sparam,"BTN_SUB_") >= 0){
+         SelectedSub = StringSubstr(sparam,8);
+         HighlightSubButton(sparam);
+         ShowQtyPanel();
+         return;
+      }
+      
+      // QTY BUTTONS
+      if(sparam=="BTN_QTY_ADD") ChangeQty(1);
+      if(sparam=="BTN_QTY_SUB") ChangeQty(-1);
+      if(sparam=="BTN_QTY_X10") ChangeQty(10);
+      if(sparam=="BTN_QTY_X100") ChangeQty(100);
+      if(sparam=="BTN_QTY_X1000") ChangeQty(1000);
+      if(sparam=="BTN_QTY_SAVE") SaveCurrentSelection();
+      
+      // EXPORT BUTTON
+      if(sparam=="BTN_EXPORT") ExportToExcelManual();
+   }
+   
+   // EDIT QTY DIRECT
+   if(id==CHARTEVENT_OBJECT_ENDEDIT && sparam=="EDIT_QTY"){
+      string val = ObjectGetString(0,"EDIT_QTY",OBJPROP_TEXT);
+      SelectedQty = StringToInteger(val);
+      if(SelectedQty > MaxQuantity) SelectedQty = MaxQuantity;
+      UpdateQtyDisplay();
+   }
+}
 
-        # ===== STEEL BARS ALL SIZES =====
-        {"Section":"Steel","Item":"R6 Stirrups","Unit":"kg","Rate":1350,"Dia":6,"Weight_per_m":0.222},
-        {"Section":"Steel","Item":"R8 Stirrups","Unit":"kg","Rate":1320,"Dia":8,"Weight_per_m":0.395},
-        {"Section":"Steel","Item":"R10 Steel","Unit":"kg","Rate":1300,"Dia":10,"Weight_per_m":0.617},
-        {"Section":"Steel","Item":"Y12 Steel","Unit":"kg","Rate":1300,"Dia":12,"Weight_per_m":0.888},
-        {"Section":"Steel","Item":"Y16 Steel","Unit":"kg","Rate":1250,"Dia":16,"Weight_per_m":1.578},
-        {"Section":"Steel","Item":"Y20 Steel","Unit":"kg","Rate":1260,"Dia":20,"Weight_per_m":2.466},
-        {"Section":"Steel","Item":"Y25 Steel","Unit":"kg","Rate":1270,"Dia":25,"Weight_per_m":3.853},
-        {"Section":"Steel","Item":"Y32 Steel","Unit":"kg","Rate":1280,"Dia":32,"Weight_per_m":6.313},
-        {"Section":"Steel","Item":"Y40 Steel","Unit":"kg","Rate":1400,"Dia":40,"Weight_per_m":9.865},
-        {"Section":"Steel","Item":"Binding Wire","Unit":"kg","Rate":2000},
+//+------------------------------------------------------------------+
+// SOMA DRAWINGS + EXPORT TO EXCEL
+void ReadAllDrawings(){
+   int total = ObjectsTotal(0,0,-1);
+   for(int i=total-1; i>=0; i--){
+      string name = ObjectName(0,i);
+      int type = ObjectType(name);
+      if(type!=OBJ_TREND && type!=OBJ_HLINE && type!=OBJ_RECTANGLE) continue;
+      
+      bool isAuto = StringFind(name,AutoPrefix) >= 0;
+      if(ReadManualDrawing &&!isAuto) ProcessDrawing(name,"MANUAL");
+      if(ReadAutoDrawing && isAuto) ProcessDrawing(name,"AUTO");
+   }
+}
 
-        # ===== CONCRETE =====
-        {"Section":"Concrete","Item":"Concrete C25","Unit":"m3","Rate":180000},
-        {"Section":"Concrete","Item":"Concrete C30","Unit":"m3","Rate":210000},
+//+------------------------------------------------------------------+
+void ProcessDrawing(string name, string mode){
+   if(SelectedMain=="" || SelectedSub=="") return;
+   if(SelectedQty<=0) return;
+   
+   static datetime lastAlert[];
+   ArrayResize(lastAlert,1);
+   
+   // Irinde alert nyinshi kuri line imwe
+   if(TimeCurrent() - lastAlert[0] < 60) return;
+   
+   double price = ObjectGetValueByShift(name,0);
+   if(price==0) return;
+   
+   if(Bid > price){ // Drawing yacitswe
+      lastAlert[0] = TimeCurrent();
+      ExportCount++;
+      
+      if(AutoExportExcel) ExportToExcel(name, mode, price);
+      
+      string msg = mode+" BREAK: "+SelectedMain+"->"+SelectedSub+" QTY:"+IntegerToString(SelectedQty);
+      Alert(msg);
+      Print(msg," | Exported #",ExportCount);
+   }
+}
 
-        # ===== FINISHING =====
-        {"Section":"Finishing","Item":"Plaster Sand","Unit":"m3","Rate":28000},
-        {"Section":"Finishing","Item":"Ceramic Tile","Unit":"m2","Rate":12000},
-        {"Section":"Finishing","Item":"Paint Emulsion","Unit":"m2","Rate":1300},
-        {"Section":"Finishing","Item":"Mabati G30","Unit":"m2","Rate":8500},
+//+------------------------------------------------------------------+
+// EXCEL EXPORT FUNCTIONS
+void InitExcelFile(){
+   if(!FileIsExist(FileName)){
+      int handle = FileOpen(FileName, FILE_WRITE|FILE_CSV|FILE_ANSI);
+      if(handle!=INVALID_HANDLE){
+         // Header ya Excel
+         FileWrite(handle,"Date","Time","Symbol","Drawing","Mode","Material","SubType","Quantity","Price","Scale_mm","Export_ID");
+         FileClose(handle);
+         Print("Excel file created: ",FileName);
+      }
+   }
+}
 
-        # ===== MEP =====
-        {"Section":"MEP","Item":"PPR 20mm Pipe","Unit":"m","Rate":2500},
-        {"Section":"MEP","Item":"2.5mm Cable","Unit":"m","Rate":1200},
-        {"Section":"MEP","Item":"Socket Outlet","Unit":"pc","Rate":3500},
+void ExportToExcel(string dwgName, string mode, double price){
+   int handle = FileOpen(FileName, FILE_READ|FILE_WRITE|FILE_CSV|FILE_ANSI);
+   if(handle!=INVALID_HANDLE){
+      FileSeek(handle,0,SEEK_END); // Jya ku mpera ya file
+      
+      string date = TimeToString(TimeCurrent(),TIME_DATE);
+      string time = TimeToString(TimeCurrent(),TIME_MINUTES);
+      
+      FileWrite(handle,
+         date,
+         time,
+         Symbol(),
+         dwgName,
+         mode,
+         SelectedMain,
+         SelectedSub,
+         IntegerToString(SelectedQty),
+         DoubleToString(price,Digits),
+         DoubleToString(GetDrawingScaleMM(),0),
+         IntegerToString(ExportCount)
+      );
+      FileClose(handle);
+   }
+}
 
-        # ===== DOORS AND WINDOWS =====
-        {"Section":"Doors_Windows","Item":"Steel Door 90x210","Unit":"pc","Rate":95000},
-        {"Section":"Doors_Windows","Item":"Aluminium Window","Unit":"m2","Rate":65000},
-    ])
+void ExportToExcelManual(){
+   if(SelectedMain=="" || SelectedSub==""){
+      Alert("Banza uhitemo Material na SubType!");
+      return;
+   }
+   ExportCount++;
+   ExportToExcel("MANUAL_EXPORT","USER",Close[0]);
+   Alert("Exported to Excel: "+SelectedMain+"->"+SelectedSub+" Qty:"+IntegerToString(SelectedQty));
+}
 
-# ============= CONSTRAINTS =============
-if 'constraints' not in st.session_state:
-    st.session_state['constraints'] = {
-        "Cement Bags per m3 C25": 6.5,
-        "Sand m3 per m3 Concrete": 0.4,
-        "Stone m3 per m3 Concrete": 0.8,
-        "Bricks per m2 6inch Wall": 60,
-        "Bricks per m2 4inch Wall": 40,
-        "Blocks per m2 23cm": 12.5,
-        "Concrete Waste Percent": 5,
-        "Steel Waste Percent": 3,
-        "Brick Waste Percent": 8,
-    }
+//+------------------------------------------------------------------+
+// UI FUNCTIONS
+void CreateMainPanel(){
+   int x=10,y=20,w=110,h=18,cols=4;
+   int rows = MathCeil(ArraySize(MainMaterials)/(double)cols);
+   
+   ObjectCreate(0,"PANEL_BG_MAIN",OBJ_RECTANGLE_LABEL,0,0,0);
+   ObjectSetInteger(0,"PANEL_BG_MAIN",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,"PANEL_BG_MAIN",OBJPROP_XDISTANCE,x-5);
+   ObjectSetInteger(0,"PANEL_BG_MAIN",OBJPROP_YDISTANCE,y-5);
+   ObjectSetInteger(0,"PANEL_BG_MAIN",OBJPROP_XSIZE,w*cols+15);
+   ObjectSetInteger(0,"PANEL_BG_MAIN",OBJPROP_YSIZE,rows*20+40);
+   ObjectSetInteger(0,"PANEL_BG_MAIN",OBJPROP_BGCOLOR,C'20,20,20');
+   
+   ObjectCreate(0,"PANEL_TITLE_MAIN",OBJ_LABEL,0,0,0);
+   ObjectSetString(0,"PANEL_TITLE_MAIN",OBJPROP_TEXT,"1. MATERIALS - ALL 20");
+   ObjectSetInteger(0,"PANEL_TITLE_MAIN",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,"PANEL_TITLE_MAIN",OBJPROP_XDISTANCE,x);
+   ObjectSetInteger(0,"PANEL_TITLE_MAIN",OBJPROP_YDISTANCE,y);
+   ObjectSetInteger(0,"PANEL_TITLE_MAIN",OBJPROP_COLOR,clrOrange);
+   
+   for(int i=0; i<ArraySize(MainMaterials); i++){
+      int col = i % cols;
+      int row = i / cols;
+      string name = "BTN_MAIN_"+MainMaterials[i];
+      ObjectCreate(0,name,OBJ_BUTTON,0,0,0);
+      ObjectSetInteger(0,name,OBJPROP_CORNER,CORNER_LEFT_UPPER);
+      ObjectSetInteger(0,name,OBJPROP_XDISTANCE,x+col*(w+2));
+      ObjectSetInteger(0,name,OBJPROP_YDISTANCE,y+25+row*20);
+      ObjectSetInteger(0,name,OBJPROP_XSIZE,w);
+      ObjectSetInteger(0,name,OBJPROP_YSIZE,h);
+      ObjectSetString(0,name,OBJPROP_TEXT,MainMaterials[i]);
+      ObjectSetInteger(0,name,OBJPROP_BGCOLOR,clrDarkGray);
+      ObjectSetInteger(0,name,OBJPROP_COLOR,clrWhite);
+      ObjectSetInteger(0,name,OBJPROP_FONTSIZE,7);
+   }
+}
 
-tabs = st.tabs(["Mix Ratio Calc", "Materials", "Constraints", "Takeoff", "BOQ"])
+void CreateSubPanel(int mainIndex){
+   string subArray[]; GetSubTypes(mainIndex, subArray);
+   int x=10,y=180,w=115,h=18,cols=4;
+   int rows = MathCeil(ArraySize(subArray)/(double)cols);
+   
+   ObjectCreate(0,"PANEL_BG_SUB",OBJ_RECTANGLE_LABEL,0,0,0);
+   ObjectSetInteger(0,"PANEL_BG_SUB",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,"PANEL_BG_SUB",OBJPROP_XDISTANCE,x-5);
+   ObjectSetInteger(0,"PANEL_BG_SUB",OBJPROP_YDISTANCE,y-5);
+   ObjectSetInteger(0,"PANEL_BG_SUB",OBJPROP_XSIZE,w*cols+15);
+   ObjectSetInteger(0,"PANEL_BG_SUB",OBJPROP_YSIZE,rows*20+40);
+   ObjectSetInteger(0,"PANEL_BG_SUB",OBJPROP_BGCOLOR,C'30,30,30');
+   
+   ObjectCreate(0,"PANEL_TITLE_SUB",OBJ_LABEL,0,0,0);
+   ObjectSetString(0,"PANEL_TITLE_SUB",OBJPROP_TEXT,"2. SUB-TYPE YA "+MainMaterials[mainIndex]);
+   ObjectSetInteger(0,"PANEL_TITLE_SUB",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,"PANEL_TITLE_SUB",OBJPROP_XDISTANCE,x);
+   ObjectSetInteger(0,"PANEL_TITLE_SUB",OBJPROP_YDISTANCE,y);
+   ObjectSetInteger(0,"PANEL_TITLE_SUB",OBJPROP_COLOR,clrGold);
+   
+   for(int i=0; i<ArraySize(subArray); i++){
+      int col = i % cols;
+      int row = i / cols;
+      string name = "BTN_SUB_"+subArray[i];
+      ObjectCreate(0,name,OBJ_BUTTON,0,0,0);
+      ObjectSetInteger(0,name,OBJPROP_CORNER,CORNER_LEFT_UPPER);
+      ObjectSetInteger(0,name,OBJPROP_XDISTANCE,x+col*(w+2));
+      ObjectSetInteger(0,name,OBJPROP_YDISTANCE,y+25+row*20);
+      ObjectSetInteger(0,name,OBJPROP_XSIZE,w);
+      ObjectSetInteger(0,name,OBJPROP_YSIZE,h);
+      ObjectSetString(0,name,OBJPROP_TEXT,subArray[i]);
+      ObjectSetInteger(0,name,OBJPROP_BGCOLOR,clrDimGray);
+      ObjectSetInteger(0,name,OBJPROP_COLOR,clrWhite);
+      ObjectSetInteger(0,name,OBJPROP_FONTSIZE,7);
+   }
+}
 
-# ===== TAB 1: MIX RATIO CALCULATOR =====
-with tabs[0]:
-    st.header("Mix Ratio Calculator - Auto Bags per m3")
+void CreateQtyPanel(){
+   int x=480,y=20,w=150,h=20;
+   
+   ObjectCreate(0,"PANEL_BG_QTY",OBJ_RECTANGLE_LABEL,0,0,0);
+   ObjectSetInteger(0,"PANEL_BG_QTY",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,"PANEL_BG_QTY",OBJPROP_XDISTANCE,x-5);
+   ObjectSetInteger(0,"PANEL_BG_QTY",OBJPROP_YDISTANCE,y-5);
+   ObjectSetInteger(0,"PANEL_BG_QTY",OBJPROP_XSIZE,w+10);
+   ObjectSetInteger(0,"PANEL_BG_QTY",OBJPROP_YSIZE,200);
+   ObjectSetInteger(0,"PANEL_BG_QTY",OBJPROP_BGCOLOR,C'40,40,40');
+   ObjectSetInteger(0,"PANEL_BG_QTY",OBJPROP_HIDDEN,true);
+   
+   ObjectCreate(0,"PANEL_TITLE_QTY",OBJ_LABEL,0,0,0);
+   ObjectSetString(0,"PANEL_TITLE_QTY",OBJPROP_TEXT,"3. QUANTITY - MAX 999M");
+   ObjectSetInteger(0,"PANEL_TITLE_QTY",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,"PANEL_TITLE_QTY",OBJPROP_XDISTANCE,x);
+   ObjectSetInteger(0,"PANEL_TITLE_QTY",OBJPROP_YDISTANCE,y);
+   ObjectSetInteger(0,"PANEL_TITLE_QTY",OBJPROP_COLOR,clrCyan);
+   ObjectSetInteger(0,"PANEL_TITLE_QTY",OBJPROP_HIDDEN,true);
+   
+   ObjectCreate(0,"EDIT_QTY",OBJ_EDIT,0,0,0);
+   ObjectSetInteger(0,"EDIT_QTY",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,"EDIT_QTY",OBJPROP_XDISTANCE,x);
+   ObjectSetInteger(0,"EDIT_QTY",OBJPROP_YDISTANCE,y+25);
+   ObjectSetInteger(0,"EDIT_QTY",OBJPROP_XSIZE,w);
+   ObjectSetInteger(0,"EDIT_QTY",OBJPROP_YSIZE,h+5);
+   ObjectSetString(0,"EDIT_QTY",OBJPROP_TEXT,IntegerToString(DefaultQty));
+   ObjectSetInteger(0,"EDIT_QTY",OBJPROP_ALIGN,ALIGN_CENTER);
+   ObjectSetInteger(0,"EDIT_QTY",OBJPROP_HIDDEN,true);
+   
+   string btns[] = {"BTN_QTY_ADD","+1","BTN_QTY_SUB","-1","BTN_QTY_X10","+10","BTN_QTY_X100","+100","BTN_QTY_X1000","+1000","BTN_QTY_SAVE","SAVE"};
+   for(int i=0; i<ArraySize(btns); i+=2){
+      ObjectCreate(0,btns[i],OBJ_BUTTON,0,0,0);
+      ObjectSetInteger(0,btns[i],OBJPROP_CORNER,CORNER_LEFT_UPPER);
+      ObjectSetInteger(0,btns[i],OBJPROP_XDISTANCE,x+(i/2%2)*75);
+      ObjectSetInteger(0,btns[i],OBJPROP_YDISTANCE,y+55+(i/4)*25);
+      ObjectSetInteger(0,btns[i],OBJPROP_XSIZE,70);
+      ObjectSetInteger(0,btns[i],OBJPROP_YSIZE,h);
+      ObjectSetString(0,btns[i],OBJPROP_TEXT,btns[i+1]);
+      ObjectSetInteger(0,btns[i],OBJPROP_HIDDEN,true);
+   }
+}
 
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        mix = st.selectbox("Select Mix Ratio", list(MIX_RATIOS.keys()))
-    with col2:
-        volume = st.number_input("Volume m3", 10.0, step=1.0)
-    with col3:
-        waste = st.number_input("Waste Percent", 5.0, step=1.0)
+void CreateExcelButton(){
+   ObjectCreate(0,"BTN_EXPORT",OBJ_BUTTON,0,0,0);
+   ObjectSetInteger(0,"BTN_EXPORT",OBJPROP_CORNER,CORNER_LEFT_UPPER);
+   ObjectSetInteger(0,"BTN_EXPORT",OBJPROP_XDISTANCE,480);
+   ObjectSetInteger(0,"BTN_EXPORT",OBJPROP_YDISTANCE,250);
+   ObjectSetInteger(0,"BTN_EXPORT",OBJPROP_XSIZE,150);
+   ObjectSetInteger(0,"BTN_EXPORT",OBJPROP_YSIZE,25);
+   ObjectSetString(0,"BTN_EXPORT",OBJPROP_TEXT,"📊 EXPORT TO EXCEL");
+   ObjectSetInteger(0,"BTN_EXPORT",OBJPROP_BGCOLOR,clrGreen);
+   ObjectSetInteger(0,"BTN_EXPORT",OBJPROP_COLOR,clrWhite);
+}
 
-    if st.button("Calculate Materials", type="primary"):
-        ratio = MIX_RATIOS[mix]
-        total_parts = sum(ratio.values())
+//+------------------------------------------------------------------+
+void GetSubTypes(int idx, string &arr[]){
+   ArrayResize(arr,0);
+   if(idx==0) ArrayCopy(arr,SubTypes_CEMENT);
+   if(idx==1) ArrayCopy(arr,SubTypes_SAND);
+   if(idx==2) ArrayCopy(arr,SubTypes_GRAVEL);
+   if(idx==3) ArrayCopy(arr,SubTypes_STEEL_BAR);
+   if(idx==4) ArrayCopy(arr,SubTypes_BRICKS);
+   if(idx==5) ArrayCopy(arr,SubTypes_TIMBER);
+   if(idx==6) ArrayCopy(arr,SubTypes_IRON_SHEET);
+   if(idx==7) ArrayCopy(arr,SubTypes_PAINT);
+   if(idx==8) ArrayCopy(arr,SubTypes_TILES);
+   if(idx==9) ArrayCopy(arr,SubTypes_NAILS);
+   if(idx==10) ArrayCopy(arr,SubTypes_CONCRETE);
+   if(idx==11) ArrayCopy(arr,SubTypes_GLASS);
+   if(idx==12) ArrayCopy(arr,SubTypes_PVC_PIPES);
+   if(idx==13) ArrayCopy(arr,SubTypes_WIRES);
+   if(idx==14) ArrayCopy(arr,SubTypes_BLOCKS);
+   if(idx==15) ArrayCopy(arr,SubTypes_WATERPROOF);
+   if(idx==16) ArrayCopy(arr,SubTypes_CEILING);
+   if(idx==17) ArrayCopy(arr,SubTypes_DOORS);
+   if(idx==18) ArrayCopy(arr,SubTypes_WINDOWS);
+   if(idx==19) ArrayCopy(arr,SubTypes_AGGREGATE);
+}
 
-        st.subheader(f"Materials for {volume} m3 of {mix}")
+void HighlightMainButton(int index){
+   for(int i=0; i<ArraySize(MainMaterials); i++){
+      string name = "BTN_MAIN_"+MainMaterials[i];
+      ObjectSetInteger(0,name,OBJPROP_BGCOLOR, i==index? clrDodgerBlue : clrDarkGray);
+   }
+}
 
-        results = []
-        if "Cement" in ratio:
-            cement_bags = (volume * ratio["Cement"] / total_parts * 2400) / 50
-            cement_bags = cement_bags * (1 + waste/100)
-            results.append(["Cement", round(cement_bags,1), "bags"])
+void HighlightSubButton(string btnName){
+   string subArray[]; GetSubTypes(SelectedMainIndex, subArray);
+   for(int i=0; i<ArraySize(subArray); i++){
+      string name = "BTN_SUB_"+subArray[i];
+      ObjectSetInteger(0,name,OBJPROP_BGCOLOR, name==btnName? clrLime : clrDimGray);
+   }
+}
 
-        if "Sand" in ratio:
-            sand_m3 = volume * ratio["Sand"] / total_parts * (1 + waste/100)
-            results.append(["River Sand", round(sand_m3,2), "m3"])
+void ChangeQty(int delta){
+   SelectedQty += delta;
+   if(SelectedQty<0) SelectedQty=0;
+   if(SelectedQty>MaxQuantity) SelectedQty=MaxQuantity;
+   UpdateQtyDisplay();
+}
 
-        if "Stone" in ratio:
-            stone_m3 = volume * ratio["Stone"] / total_parts * (1 + waste/100)
-            results.append(["Stone 20mm", round(stone_m3,2), "m3"])
+void UpdateQtyDisplay(){ ObjectSetString(0,"EDIT_QTY",OBJPROP_TEXT,IntegerToString(SelectedQty)); }
+void DeleteSubPanel(){ ObjectsDeleteAll(0,"PANEL_BG_SUB"); ObjectsDeleteAll(0,"PANEL_TITLE_SUB"); ObjectsDeleteAll(0,"BTN_SUB_"); }
+void ShowQtyPanel(){
+   ObjectSetInteger(0,"PANEL_BG_QTY",OBJPROP_HIDDEN,false);
+   ObjectSetInteger(0,"PANEL_TITLE_QTY",OBJPROP_HIDDEN,false);
+   ObjectSetInteger(0,"EDIT_QTY",OBJPROP_HIDDEN,false);
+   string btns[] = {"BTN_QTY_ADD","BTN_QTY_SUB","BTN_QTY_X10","BTN_QTY_X100","BTN_QTY_X1000","BTN_QTY_SAVE"};
+   for(int i=0; i<ArraySize(btns); i++) ObjectSetInteger(0,btns[i],OBJPROP_HIDDEN,false);
+   SelectedQty = DefaultQty;
+   UpdateQtyDisplay();
+}
 
-        if "Water" in ratio:
-            water_liters = volume * ratio["Water"] * 1000
-            results.append(["Water", round(water_liters,0), "liters"])
+void UpdateInfoPanel(){
+   if(SelectedMain!="" && SelectedSub!=""){
+      Comment("SELECTED: ",SelectedMain," -> ",SelectedSub," | QTY: ",IntegerToString(SelectedQty)," | Exports: ",ExportCount);
+   }
+}
 
-        st.dataframe(pd.DataFrame(results, columns=["Material","Qty","Unit"]), use_container_width=True)
+double GetDrawingScaleMM(){
+   int bars = WindowBarsPerChart();
+   double high = High[iHighest(NULL,0,MODE_HIGH,bars,0)];
+   double low = Low[iLowest(NULL,0,MODE_LOW,bars,0)];
+   return (high - low) / Point;
+}
 
-        if st.button("Add to Takeoff List"):
-            for r in results:
-                st.session_state.setdefault('measurements', []).append({
-                    "Section":"Concrete", "Item":r[0], "Qty":r[1], "Unit":r[2]
-                })
-            st.success("Added to takeoff!")
+void SaveCurrentSelection(){
+   GlobalVariableSet("BES_Main",SelectedMainIndex);
+   GlobalVariableSet("BES_Sub",SelectedSub);
+   GlobalVariableSet("BES_Qty",SelectedQty);
+   Alert("SAVED: "+SelectedMain+"->"+SelectedSub+" Qty:"+IntegerToString(SelectedQty));
+}
 
-# ===== TAB 2: MATERIALS TABLE =====
-with tabs[1]:
-    st.header("Complete Materials Database")
+void LoadSavedSelection(){
+   if(GlobalVariableCheck("BES_Main")){
+      SelectedMainIndex = (int)GlobalVariableGet("BES_Main");
+      SelectedMain = MainMaterials[SelectedMainIndex];
+      SelectedSub = GlobalVariableGet("BES_Sub");
+      SelectedQty = (long)GlobalVariableGet("BES_Qty");
+      HighlightMainButton(SelectedMainIndex);
+      CreateSubPanel(SelectedMainIndex);
+      ShowQtyPanel();
+   }
+}
 
-    section = st.selectbox("Filter Section", ["All"] + list(st.session_state['materials']['Section'].unique()))
-    df_mat = st.session_state['materials']
-    if section!= "All":
-        df_mat = df_mat[df_mat['Section']==section]
-
-    edited = st.data_editor(df_mat, use_container_width=True, num_rows="dynamic")
-    st.session_state['materials'] = edited
-    st.info(f"Total: {len(edited)} materials loaded")
-
-# ===== TAB 3: CONSTRAINTS =====
-with tabs[2]:
-    st.header("Construction Constraints")
-    cons_df = pd.DataFrame(list(st.session_state['constraints'].items()), columns=["Parameter","Value"])
-    edited_cons = st.data_editor(cons_df, use_container_width=True, hide_index=True)
-    st.session_state['constraints'] = dict(zip(edited_cons['Parameter'], edited_cons['Value']))
-
-# ===== TAB 4: TAKEOFF =====
-with tabs[3]:
-    st.header("Manual Takeoff")
-
-    if 'measurements' not in st.session_state:
-        st.session_state['measurements'] = []
-
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        section = st.selectbox("Section", st.session_state['materials']['Section'].unique())
-    with col2:
-        item = st.selectbox("Item", st.session_state['materials'][st.session_state['materials']['Section']==section]['Item'].tolist())
-    with col3:
-        qty = st.number_input("Quantity", 0.0, step=0.1)
-    with col4:
-        unit = st.session_state['materials'][st.session_state['materials']['Item']==item]['Unit'].iloc[0]
-        st.text_input("Unit", unit, disabled=True)
-
-    if st.button("Add Item"):
-        st.session_state['measurements'].append({"Section":section, "Item":item, "Qty":qty, "Unit":unit})
-        st.rerun()
-
-    if st.session_state['measurements']:
-        st.dataframe(pd.DataFrame(st.session_state['measurements']), use_container_width=True, hide_index=True)
-
-# ===== TAB 5: BOQ =====
-with tabs[4]:
-    st.header("Bill of Quantities")
-
-    if not st.session_state.get('measurements'):
-        st.warning("Add measurements first")
-    else:
-        df_meas = pd.DataFrame(st.session_state['measurements'])
-        df_mat = st.session_state['materials']
-        cons = st.session_state['constraints']
-
-        boq = []
-        for _, row in df_meas.iterrows():
-            mat = df_mat[df_mat['Item']==row['Item']].iloc[0]
-            rate = mat['Rate']
-            qty = row['Qty']
-
-            if row['Section'] == "Steel": waste = cons['Steel Waste Percent']/100
-            elif row['Section'] == "Brick": waste = cons['Brick Waste Percent']/100
-            elif row['Section'] == "Concrete": waste = cons['Concrete Waste Percent']/100
-            else: waste = 0.05
-
-            gross_qty = qty * (1 + waste)
-            amount = gross_qty * rate
-
-            boq.append({
-                "Section":row['Section'], "Item":row['Item'],
-                "Net Qty":qty, "Waste Percent":waste*100,
-                "Gross Qty":round(gross_qty,2), "Unit":row['Unit'],
-                "Rate":rate, "Amount":round(amount,0)
-            })
-
-        df_boq = pd.DataFrame(boq)
-        subtotal = df_boq['Amount'].sum()
-        vat = subtotal * 0.18
-        total = subtotal + vat
-
-        st.dataframe(df_boq, use_container_width=True, hide_index=True)
-
-        c1, c2, c3 = st.columns(3)
-        c1.metric("Subtotal", f"{subtotal:,.0f} RWF")
-        c2.metric("VAT 18%", f"{vat:,.0f} RWF")
-        c3.metric("TOTAL", f"{total:,.0f} RWF")
-
-        fig = px.pie(df_boq, values='Amount', names='Section', title="Cost by Section")
-        st.plotly_chart(fig, use_container_width=True)
-
-        def to_excel():
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                df_boq.to_excel(writer, index=False, sheet_name='BOQ')
-                st.session_state['materials'].to_excel(writer, index=False, sheet_name='Materials')
-            return output.getvalue()
-
-        st.download_button("Download Excel", to_excel(), "B-ESTAMER_4.3.xlsx")
-
-st.divider()
-st.caption("B-ESTAMER 4.3 FINAL | All Steel + Brick + Mix Ratios | 0787993679")
+void SaveSelection(){ if(SelectedMain!="") SaveCurrentSelection(); }
+bool IsNewCandle(){ static datetime lastBar=0; if(Time[0]!=lastBar){lastBar=Time[0]; return true;} return false; }
+//+------------------------------------------------------------------+
