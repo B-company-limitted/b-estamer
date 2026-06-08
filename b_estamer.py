@@ -1,5 +1,5 @@
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
-# B-ESTAMER V4.7 ULTIMATE FIXED - Y50 STEEL + MIX CALC + BAR CUTTING | 0787993679
+# B-ESTAMER V4.7 ULTIMATE - Y50 STEEL + MIX CALC + BAR CUTTING + ALL MATERIALS | 0787993679
 
 import streamlit as st
 import pandas as pd
@@ -450,4 +450,5 @@ with tabs[5]:
         fig = px.pie(df_boq, values='Amount', names='Section', title="Cost by Section")
         st.plotly_chart(fig, use_container_width=True)
 
-        fig2 = px.bar(df_boq.groupby('Section')['Amount'].sum().reset_index(), x='Section', y='Amount', title="Cost by Section Bar
+        fig2 = px.bar(df_boq.groupby('Section')['Amount'].sum().reset_index(), x='Section', y='Amount', title="Cost by Section Bar Chart")
+        st.plotly_chart(fig2, use_container_width=True)
