@@ -1,5 +1,5 @@
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
-# B-ESTAMER V4.7 ULTIMATE - Y50 STEEL + MIX CALC + BAR CUTTING + ALL MATERIALS | 0787993679
+# B-ESTAMER V4.7 ULTIMATE FIXED - Y50 STEEL + MIX CALC + BAR CUTTING | 0787993679
 
 import streamlit as st
 import pandas as pd
@@ -52,29 +52,22 @@ MATERIAL_TREE = {
 # ============= FULL MATERIALS DATABASE WITH DETAILS =============
 if 'materials' not in st.session_state:
     st.session_state['materials'] = pd.DataFrame([
-        # CEMENT
         {"Section":"CEMENT","Item":"CEM II 42.5N","Unit":"bag","Rate":12500,"Weight":50},
         {"Section":"CEMENT","Item":"CEM I 52.5N","Unit":"bag","Rate":14500,"Weight":50},
         {"Section":"CEMENT","Item":"White Cement","Unit":"bag","Rate":25000,"Weight":50},
         {"Section":"CEMENT","Item":"Quick Set Cement","Unit":"bag","Rate":16000,"Weight":50},
         {"Section":"CEMENT","Item":"Portland Cement","Unit":"bag","Rate":13000,"Weight":50},
-
-        # SAND
         {"Section":"SAND","Item":"River Sand","Unit":"m3","Rate":25000,"Density":1600},
         {"Section":"SAND","Item":"Crushed Sand","Unit":"m3","Rate":22000,"Density":1550},
         {"Section":"SAND","Item":"Plaster Sand","Unit":"m3","Rate":28000,"Density":1600},
         {"Section":"SAND","Item":"Filling Sand","Unit":"m3","Rate":18000,"Density":1500},
         {"Section":"SAND","Item":"Quarry Dust","Unit":"m3","Rate":18000,"Density":1450},
-
-        # STONE
         {"Section":"STONE","Item":"Stone 20mm","Unit":"m3","Rate":32000,"Density":1450},
         {"Section":"STONE","Item":"Stone 40mm","Unit":"m3","Rate":30000,"Density":1400},
         {"Section":"STONE","Item":"Ballast","Unit":"m3","Rate":28000,"Density":1500},
         {"Section":"STONE","Item":"Hardcore","Unit":"m3","Rate":20000,"Density":1600},
         {"Section":"STONE","Item":"Aggregate Dust","Unit":"m3","Rate":17000,"Density":1400},
         {"Section":"STONE","Item":"Chippings","Unit":"m3","Rate":35000,"Density":1400},
-
-        # BRICK
         {"Section":"BRICK","Item":"Clay Brick 6 inch","Unit":"pc","Rate":250},
         {"Section":"BRICK","Item":"Clay Brick 4 inch","Unit":"pc","Rate":180},
         {"Section":"BRICK","Item":"Concrete Block 23cm Solid","Unit":"pc","Rate":1000},
@@ -83,8 +76,6 @@ if 'materials' not in st.session_state:
         {"Section":"BRICK","Item":"Concrete Block 15cm Hollow","Unit":"pc","Rate":700},
         {"Section":"BRICK","Item":"Paving Block","Unit":"pc","Rate":300},
         {"Section":"BRICK","Item":"Face Brick","Unit":"pc","Rate":450},
-
-        # STEEL_BAR - Y50 INCLUDED
         {"Section":"STEEL_BAR","Item":"R6 Stirrups","Unit":"kg","Rate":1350,"Dia":6,"Weight_per_m":0.222,"Length":12},
         {"Section":"STEEL_BAR","Item":"R8 Stirrups","Unit":"kg","Rate":1320,"Dia":8,"Weight_per_m":0.395,"Length":12},
         {"Section":"STEEL_BAR","Item":"R10 Steel","Unit":"kg","Rate":1300,"Dia":10,"Weight_per_m":0.617,"Length":12},
@@ -95,15 +86,11 @@ if 'materials' not in st.session_state:
         {"Section":"STEEL_BAR","Item":"Y32 Steel","Unit":"kg","Rate":1280,"Dia":32,"Weight_per_m":6.313,"Length":12},
         {"Section":"STEEL_BAR","Item":"Y40 Steel","Unit":"kg","Rate":1400,"Dia":40,"Weight_per_m":9.865,"Length":12},
         {"Section":"STEEL_BAR","Item":"Y50 Steel","Unit":"kg","Rate":1550,"Dia":50,"Weight_per_m":15.413,"Length":12},
-
-        # BINDING
         {"Section":"BINDING","Item":"Binding Wire","Unit":"kg","Rate":2000},
         {"Section":"BINDING","Item":"BRC Mesh A142","Unit":"roll","Rate":85000,"Area":50},
         {"Section":"BINDING","Item":"BRC Mesh A98","Unit":"roll","Rate":65000,"Area":50},
         {"Section":"BINDING","Item":"Chain Link","Unit":"m2","Rate":3500},
         {"Section":"BINDING","Item":"Barbed Wire","Unit":"roll","Rate":25000},
-
-        # TIMBER
         {"Section":"TIMBER","Item":"Cypress 2x2","Unit":"m","Rate":450},
         {"Section":"TIMBER","Item":"Cypress 3x2","Unit":"m","Rate":650},
         {"Section":"TIMBER","Item":"Cypress 4x2","Unit":"m","Rate":850},
@@ -113,8 +100,6 @@ if 'materials' not in st.session_state:
         {"Section":"TIMBER","Item":"Hardwood","Unit":"m3","Rate":450000},
         {"Section":"TIMBER","Item":"Softwood","Unit":"m3","Rate":280000},
         {"Section":"TIMBER","Item":"Pine","Unit":"m3","Rate":320000},
-
-        # IRON_SHEET
         {"Section":"IRON_SHEET","Item":"Mabati G30 Versatile","Unit":"m2","Rate":8500},
         {"Section":"IRON_SHEET","Item":"Mabati G28 IT4","Unit":"m2","Rate":9500},
         {"Section":"IRON_SHEET","Item":"Mabati G30 Corrugated","Unit":"m2","Rate":7500},
@@ -122,8 +107,6 @@ if 'materials' not in st.session_state:
         {"Section":"IRON_SHEET","Item":"Gauge 28","Unit":"m2","Rate":9800},
         {"Section":"IRON_SHEET","Item":"Gauge 30","Unit":"m2","Rate":8200},
         {"Section":"IRON_SHEET","Item":"Aluminium Sheet","Unit":"m2","Rate":15000},
-
-        # PAINT
         {"Section":"PAINT","Item":"Emulsion Paint","Unit":"L","Rate":8500},
         {"Section":"PAINT","Item":"Weather Guard","Unit":"L","Rate":12000},
         {"Section":"PAINT","Item":"Undercoat","Unit":"L","Rate":7500},
@@ -131,8 +114,6 @@ if 'materials' not in st.session_state:
         {"Section":"PAINT","Item":"Oil Based","Unit":"L","Rate":11000},
         {"Section":"PAINT","Item":"Water Based","Unit":"L","Rate":9000},
         {"Section":"PAINT","Item":"Primer","Unit":"L","Rate":8000},
-
-        # TILES
         {"Section":"TILES","Item":"Ceramic Tile 30x30","Unit":"m2","Rate":12000},
         {"Section":"TILES","Item":"Ceramic Tile 60x60","Unit":"m2","Rate":18000},
         {"Section":"TILES","Item":"Porcelain Tile","Unit":"m2","Rate":25000},
@@ -140,8 +121,6 @@ if 'materials' not in st.session_state:
         {"Section":"TILES","Item":"Marble Tile","Unit":"m2","Rate":65000},
         {"Section":"TILES","Item":"PVC Tile","Unit":"m2","Rate":8000},
         {"Section":"TILES","Item":"Terrazzo","Unit":"m2","Rate":35000},
-
-        # CONCRETE
         {"Section":"CONCRETE","Item":"Concrete C15","Unit":"m3","Rate":160000},
         {"Section":"CONCRETE","Item":"Concrete C20","Unit":"m3","Rate":170000},
         {"Section":"CONCRETE","Item":"Concrete C25","Unit":"m3","Rate":180000},
@@ -150,16 +129,12 @@ if 'materials' not in st.session_state:
         {"Section":"CONCRETE","Item":"Concrete C40","Unit":"m3","Rate":280000},
         {"Section":"CONCRETE","Item":"Ready Mix C25","Unit":"m3","Rate":195000},
         {"Section":"CONCRETE","Item":"Ready Mix C30","Unit":"m3","Rate":225000},
-
-        # GLASS
         {"Section":"GLASS","Item":"Glass 4mm Clear","Unit":"m2","Rate":12000},
         {"Section":"GLASS","Item":"Glass 5mm Tinted","Unit":"m2","Rate":18000},
         {"Section":"GLASS","Item":"Glass 6mm Laminated","Unit":"m2","Rate":28000},
         {"Section":"GLASS","Item":"Mirror","Unit":"m2","Rate":25000},
         {"Section":"GLASS","Item":"Frosted Glass","Unit":"m2","Rate":22000},
         {"Section":"GLASS","Item":"Bullet Proof","Unit":"m2","Rate":180000},
-
-        # PIPES
         {"Section":"PIPES","Item":"PPR 20mm","Unit":"m","Rate":2500},
         {"Section":"PIPES","Item":"PPR 25mm","Unit":"m","Rate":3500},
         {"Section":"PIPES","Item":"PPR 32mm","Unit":"m","Rate":5500},
@@ -169,8 +144,6 @@ if 'materials' not in st.session_state:
         {"Section":"PIPES","Item":"PVC 6inch","Unit":"m","Rate":8500},
         {"Section":"PIPES","Item":"HDPE 50mm","Unit":"m","Rate":6500},
         {"Section":"PIPES","Item":"GI Pipe 1inch","Unit":"m","Rate":4500},
-
-        # WIRES
         {"Section":"WIRES","Item":"Cable 1.5mm","Unit":"m","Rate":900},
         {"Section":"WIRES","Item":"Cable 2.5mm","Unit":"m","Rate":1200},
         {"Section":"WIRES","Item":"Cable 4mm","Unit":"m","Rate":2200},
@@ -179,38 +152,28 @@ if 'materials' not in st.session_state:
         {"Section":"WIRES","Item":"Cable 16mm","Unit":"m","Rate":12000},
         {"Section":"WIRES","Item":"Twin Earth","Unit":"m","Rate":2800},
         {"Section":"WIRES","Item":"Armoured Cable","Unit":"m","Rate":15000},
-
-        # DOORS
         {"Section":"DOORS","Item":"Steel Door 90x210","Unit":"pc","Rate":95000},
         {"Section":"DOORS","Item":"Flush Door","Unit":"pc","Rate":45000},
         {"Section":"DOORS","Item":"Panel Door","Unit":"pc","Rate":75000},
         {"Section":"DOORS","Item":"PVC Door","Unit":"pc","Rate":65000},
         {"Section":"DOORS","Item":"Glass Door","Unit":"pc","Rate":120000},
         {"Section":"DOORS","Item":"Security Door","Unit":"pc","Rate":180000},
-
-        # WINDOWS
         {"Section":"WINDOWS","Item":"Aluminium Sliding","Unit":"m2","Rate":65000},
         {"Section":"WINDOWS","Item":"Aluminium Casement","Unit":"m2","Rate":70000},
         {"Section":"WINDOWS","Item":"Louver Window","Unit":"m2","Rate":45000},
         {"Section":"WINDOWS","Item":"Wooden Window","Unit":"m2","Rate":55000},
         {"Section":"WINDOWS","Item":"UPVC Window","Unit":"m2","Rate":85000},
-
-        # WATERPROOF
         {"Section":"WATERPROOF","Item":"APP Membrane","Unit":"roll","Rate":95000},
         {"Section":"WATERPROOF","Item":"Bitumen Paint","Unit":"L","Rate":6500},
         {"Section":"WATERPROOF","Item":"Cementitious Waterproof","Unit":"bag","Rate":35000},
         {"Section":"WATERPROOF","Item":"Liquid Membrane","Unit":"L","Rate":12000},
         {"Section":"WATERPROOF","Item":"EPDM","Unit":"m2","Rate":18000},
-
-        # CEILING
         {"Section":"CEILING","Item":"Gypsum Board","Unit":"pc","Rate":18000},
         {"Section":"CEILING","Item":"PVC Ceiling","Unit":"m2","Rate":12000},
         {"Section":"CEILING","Item":"Acoustic Ceiling","Unit":"m2","Rate":25000},
         {"Section":"CEILING","Item":"Wooden T&G","Unit":"m2","Rate":18000},
         {"Section":"CEILING","Item":"Suspended Ceiling","Unit":"m2","Rate":22000},
         {"Section":"CEILING","Item":"Mineral Fiber","Unit":"m2","Rate":20000},
-
-        # NAILS
         {"Section":"NAILS","Item":"Nails 1 inch","Unit":"kg","Rate":1800},
         {"Section":"NAILS","Item":"Nails 2 inch","Unit":"kg","Rate":1800},
         {"Section":"NAILS","Item":"Nails 3 inch","Unit":"kg","Rate":1800},
@@ -228,7 +191,7 @@ if 'selected_sub' not in st.session_state:
 if 'measurements' not in st.session_state:
     st.session_state['measurements'] = []
 
-tabs = st.tabs(["1. Mix Calculator", "2. Bar Cutting", "3. Brick Wall", "4. Material Browser", "5. All Materials", "6. BOQ"])
+tabs = st.tabs(["1. Mix Calculator", "2. Bar Cutting Y50", "3. Brick Wall", "4. Material Browser", "5. All Materials", "6. BOQ"])
 
 # ===== TAB 1: MIX RATIO CALCULATOR =====
 with tabs[0]:
@@ -252,7 +215,7 @@ with tabs[0]:
         if "Cement" in ratio:
             cement_bags = (volume * ratio["Cement"] / total_parts * 2400) / 50
             cement_bags = cement_bags * (1 + waste/100)
-            results.append(["Cement CEM II 42.5N", round(cement_bags,1), "bags"])
+            results.append(["CEM II 42.5N", round(cement_bags,1), "bags"])
 
         if "Sand" in ratio:
             sand_m3 = volume * ratio["Sand"] / total_parts * (1 + waste/100)
@@ -272,7 +235,7 @@ with tabs[0]:
             for r in results:
                 if r[0]!="Water":
                     st.session_state['measurements'].append({
-                        "Section":"Concrete", "Item":r[0], "Qty":r[1], "Unit":r[2], "Source":"Mix Ratio"
+                        "Section":"CONCRETE", "Item":r[0], "Qty":r[1], "Unit":r[2], "Source":"Mix Ratio"
                     })
             st.success("Added to BOQ!")
 
@@ -482,4 +445,9 @@ with tabs[5]:
         c1.metric("Subtotal", f"{subtotal:,.0f} RWF")
         c2.metric("VAT 18%", f"{vat:,.0f} RWF")
         c3.metric("TOTAL", f"{total:,.0f} RWF")
-        c4.metric("Items",
+        c4.metric("Items", f"{len(df_boq)}")
+
+        fig = px.pie(df_boq, values='Amount', names='Section', title="Cost by Section")
+        st.plotly_chart(fig, use_container_width=True)
+
+        fig2 = px.bar(df_boq.groupby('Section')['Amount'].sum().reset_index(), x='Section', y='Amount', title="Cost by Section Bar
