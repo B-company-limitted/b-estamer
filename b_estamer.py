@@ -1,5 +1,5 @@
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
-# B-ESTAMER V5.3 - 20 ELEMENTS + MATERIAL BROWSER + DRAWING + EXCEL | 0787993679
+# B-ESTAMER V5.3 FIXED - 20 ELEMENTS + MATERIAL BROWSER + DRAWING + EXCEL | 0787993679
 
 import streamlit as st
 import pandas as pd
@@ -364,7 +364,7 @@ with tabs[1]:
         st.success(f"*TOTAL for {element_name}: {total_cost:,.0f} RWF* - Added to BOQ!")
         st.balloons()
 
-# ===== TAB 3: MATERIAL BROWSER - NEW =====
+# ===== TAB 3: MATERIAL BROWSER =====
 with tabs[2]:
     st.header("🧱 Material Browser - Hitamo Material + Sub Type")
     st.info("Kanda Main Material → Reba Sub-Types → Hitamo → Andika Qty → Yijya muri BOQ")
@@ -459,7 +459,6 @@ with tabs[3]:
         def create_excel():
             output = BytesIO()
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
-                # Sheet 1: BOQ
                 df_boq.to_excel(writer, index=False, sheet_name='BOQ', startrow=2)
                 ws_boq = writer.sheets['BOQ']
                 ws_boq['A1'] = "B-ESTAMER 5.3 - BILL OF QUANTITIES - 20 ELEMENTS"
@@ -468,14 +467,12 @@ with tabs[3]:
                 ws_boq.merge_cells('A1:H1')
                 ws_boq['A1'].alignment = Alignment(horizontal='center')
 
-                # Sheet 2: Takeoff List
                 if st.session_state['takeoff_list']:
                     pd.DataFrame(st.session_state['takeoff_list']).to_excel(writer, index=False, sheet_name='Takeoff', startrow=2)
                     ws_takeoff = writer.sheets['Takeoff']
                     ws_takeoff['A1'] = "MANUAL TAKEOFF LIST"
                     ws_takeoff['A1'].font = Font(bold=True, size=14)
 
-                # Sheet 3: Drawings
                 if st.session_state['drawing_image']:
                     ws_draw = writer.book.create_sheet('Drawings')
                     ws_draw['A1'] = "PROJECT DRAWINGS"
@@ -492,7 +489,6 @@ with tabs[3]:
                     ws_draw.add_image(img, 'A3')
                     ws_draw['A2'] = f"Drawing uploaded: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}"
 
-                # Sheet 4: Summary
                 ws_sum = writer.book.create_sheet('Summary')
                 ws_sum['A1'] = "PROJECT COST SUMMARY"
                 ws_sum['A1'].font = Font(bold=True, size=16, color="FFFFFF")
@@ -529,4 +525,4 @@ with tabs[3]:
         )
 
 st.divider()
-st.caption("B-ESTAMER 5.3 | 20 Elements + Material Browser | Kigali
+st.caption("B-ESTAMER 5.3 | 20 Elements + Material Browser | Kigali College SMM | 0787993679")
