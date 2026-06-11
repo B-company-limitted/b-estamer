@@ -1,5 +1,5 @@
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
-# B-ESTAMER V5.3 FIXED - 20 ELEMENTS + MATERIAL BROWSER + DRAWING + EXCEL | 0787993679
+# B-ESTAMER V5.5 COMPLETE - 20 ELEMENTS + MATERIAL TABLE + DRAWING + EXCEL | 0787993679
 
 import streamlit as st
 import pandas as pd
@@ -11,9 +11,9 @@ import openpyxl
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Font, Alignment, PatternFill
 
-st.set_page_config(page_title="B-ESTAMER 5.3", layout="wide")
-st.title("B-ESTAMER 5.3 ULTIMATE 🏗️")
-st.caption("20 Elements + Material Browser + Drawing Reader + Auto Excel")
+st.set_page_config(page_title="B-ESTAMER 5.5", layout="wide")
+st.title("B-ESTAMER 5.5 ULTIMATE 🏗️")
+st.caption("20 Elements + Material Table Browser + Drawing Reader + Auto Excel")
 
 # ============= MATERIAL TREE - MAIN + SUB TYPES =============
 MATERIAL_TREE = {
@@ -150,7 +150,7 @@ ELEMENTS = {
         "inputs": ["Length m", "Width m", "Height m", "Number", "Main Bar Dia"],
         "formula": lambda l,w,h,n,dia: {
             "Concrete C30": {"qty": l*w*h*n, "unit":"m3", "rate":210000},
-            f"Y{dia} Steel": {"qty": l*w*h*n*120, "unit":"kg", "rate":1250 if dia==16 else 1260},
+            "Y16 Steel" if dia==16 else "Y20 Steel": {"qty": l*w*h*n*120, "unit":"kg", "rate":1250 if dia==16 else 1260},
             "Formwork": {"qty": 2*(l+w)*h*n, "unit":"m2", "rate":8500},
             "R8 Stirrups": {"qty": l*w*h*n*15, "unit":"kg", "rate":1320}
         }
@@ -160,7 +160,7 @@ ELEMENTS = {
         "inputs": ["Length m", "Width m", "Depth m", "Number", "Main Bar Dia"],
         "formula": lambda l,w,d,n,dia: {
             "Concrete C30": {"qty": l*w*d*n, "unit":"m3", "rate":210000},
-            f"Y{dia} Steel": {"qty": l*w*d*n*100, "unit":"kg", "rate":1250 if dia==16 else 1260},
+            "Y16 Steel" if dia==16 else "Y20 Steel": {"qty": l*w*d*n*100, "unit":"kg", "rate":1250 if dia==16 else 1260},
             "Formwork": {"qty": (2*d+w)*l*n, "unit":"m2", "rate":8500},
             "R8 Stirrups": {"qty": l*w*d*n*12, "unit":"kg", "rate":1320}
         }
@@ -228,40 +228,144 @@ if 'materials' not in st.session_state:
     st.session_state['materials'] = pd.DataFrame([
         {"Section":"CEMENT","Item":"CEM II 42.5N","Unit":"bag","Rate":12500},
         {"Section":"CEMENT","Item":"CEM I 52.5N","Unit":"bag","Rate":14500},
+        {"Section":"CEMENT","Item":"White Cement","Unit":"bag","Rate":22000},
+        {"Section":"CEMENT","Item":"Quick Set Cement","Unit":"bag","Rate":15000},
+        {"Section":"CEMENT","Item":"Portland Cement","Unit":"bag","Rate":13500},
         {"Section":"SAND","Item":"River Sand","Unit":"m3","Rate":25000},
+        {"Section":"SAND","Item":"Crushed Sand","Unit":"m3","Rate":30000},
         {"Section":"SAND","Item":"Plaster Sand","Unit":"m3","Rate":28000},
+        {"Section":"SAND","Item":"Filling Sand","Unit":"m3","Rate":22000},
+        {"Section":"SAND","Item":"Quarry Dust","Unit":"m3","Rate":18000},
         {"Section":"STONE","Item":"Stone 20mm","Unit":"m3","Rate":32000},
         {"Section":"STONE","Item":"Stone 40mm","Unit":"m3","Rate":30000},
+        {"Section":"STONE","Item":"Ballast","Unit":"m3","Rate":28000},
         {"Section":"STONE","Item":"Hardcore","Unit":"m3","Rate":20000},
+        {"Section":"STONE","Item":"Aggregate Dust","Unit":"m3","Rate":25000},
+        {"Section":"STONE","Item":"Chippings","Unit":"m3","Rate":35000},
         {"Section":"BRICK","Item":"Clay Brick 6 inch","Unit":"pc","Rate":250},
         {"Section":"BRICK","Item":"Clay Brick 4 inch","Unit":"pc","Rate":180},
+        {"Section":"BRICK","Item":"Concrete Block 23cm Solid","Unit":"pc","Rate":1200},
+        {"Section":"BRICK","Item":"Concrete Block 15cm Solid","Unit":"pc","Rate":950},
+        {"Section":"BRICK","Item":"Concrete Block 23cm Hollow","Unit":"pc","Rate":850},
+        {"Section":"BRICK","Item":"Concrete Block 15cm Hollow","Unit":"pc","Rate":650},
+        {"Section":"BRICK","Item":"Paving Block","Unit":"m2","Rate":8500},
+        {"Section":"BRICK","Item":"Face Brick","Unit":"pc","Rate":450},
+        {"Section":"STEEL_BAR","Item":"R6 Stirrups","Unit":"kg","Rate":1350,"Weight_per_m":0.222},
         {"Section":"STEEL_BAR","Item":"R8 Stirrups","Unit":"kg","Rate":1320,"Weight_per_m":0.395},
+        {"Section":"STEEL_BAR","Item":"R10 Steel","Unit":"kg","Rate":1310,"Weight_per_m":0.617},
         {"Section":"STEEL_BAR","Item":"Y12 Steel","Unit":"kg","Rate":1300,"Weight_per_m":0.888},
         {"Section":"STEEL_BAR","Item":"Y16 Steel","Unit":"kg","Rate":1250,"Weight_per_m":1.578},
         {"Section":"STEEL_BAR","Item":"Y20 Steel","Unit":"kg","Rate":1260,"Weight_per_m":2.466},
+        {"Section":"STEEL_BAR","Item":"Y25 Steel","Unit":"kg","Rate":1280,"Weight_per_m":3.854},
+        {"Section":"STEEL_BAR","Item":"Y32 Steel","Unit":"kg","Rate":1350,"Weight_per_m":6.313},
+        {"Section":"STEEL_BAR","Item":"Y40 Steel","Unit":"kg","Rate":1450,"Weight_per_m":9.865},
         {"Section":"STEEL_BAR","Item":"Y50 Steel","Unit":"kg","Rate":1550,"Weight_per_m":15.413},
         {"Section":"BINDING","Item":"Binding Wire","Unit":"kg","Rate":2000},
         {"Section":"BINDING","Item":"BRC Mesh A142","Unit":"m2","Rate":1700},
+        {"Section":"BINDING","Item":"BRC Mesh A98","Unit":"m2","Rate":1350},
+        {"Section":"BINDING","Item":"Chain Link","Unit":"m","Rate":8500},
+        {"Section":"BINDING","Item":"Barbed Wire","Unit":"kg","Rate":3200},
+        {"Section":"TIMBER","Item":"Cypress 2x2","Unit":"m","Rate":450},
         {"Section":"TIMBER","Item":"Cypress 3x2","Unit":"m","Rate":650},
+        {"Section":"TIMBER","Item":"Cypress 4x2","Unit":"m","Rate":850},
+        {"Section":"TIMBER","Item":"Plywood 18mm","Unit":"pc","Rate":45000},
+        {"Section":"TIMBER","Item":"Marine Board 18mm","Unit":"pc","Rate":65000},
+        {"Section":"TIMBER","Item":"MDF Board","Unit":"pc","Rate":35000},
+        {"Section":"TIMBER","Item":"Hardwood","Unit":"m3","Rate":450000},
+        {"Section":"TIMBER","Item":"Softwood","Unit":"m3","Rate":280000},
+        {"Section":"TIMBER","Item":"Pine","Unit":"m3","Rate":320000},
         {"Section":"IRON_SHEET","Item":"Mabati G30 Versatile","Unit":"m2","Rate":8500},
+        {"Section":"IRON_SHEET","Item":"Mabati G28 IT4","Unit":"m2","Rate":9200},
+        {"Section":"IRON_SHEET","Item":"Mabati G30 Corrugated","Unit":"m2","Rate":7800},
+        {"Section":"IRON_SHEET","Item":"Resincot","Unit":"m2","Rate":12000},
+        {"Section":"IRON_SHEET","Item":"Gauge 28","Unit":"m2","Rate":9500},
+        {"Section":"IRON_SHEET","Item":"Gauge 30","Unit":"m2","Rate":8200},
+        {"Section":"IRON_SHEET","Item":"Aluminium Sheet","Unit":"m2","Rate":15000},
         {"Section":"PAINT","Item":"Emulsion Paint","Unit":"L","Rate":8500},
+        {"Section":"PAINT","Item":"Weather Guard","Unit":"L","Rate":12000},
+        {"Section":"PAINT","Item":"Undercoat","Unit":"L","Rate":7500},
+        {"Section":"PAINT","Item":"Varnish","Unit":"L","Rate":15000},
+        {"Section":"PAINT","Item":"Oil Based","Unit":"L","Rate":9500},
+        {"Section":"PAINT","Item":"Water Based","Unit":"L","Rate":8500},
+        {"Section":"PAINT","Item":"Primer","Unit":"L","Rate":7000},
+        {"Section":"TILES","Item":"Ceramic Tile 30x30","Unit":"m2","Rate":15000},
+        {"Section":"TILES","Item":"Ceramic Tile 60x60","Unit":"m2","Rate":22000},
+        {"Section":"TILES","Item":"Porcelain Tile","Unit":"m2","Rate":28000},
+        {"Section":"TILES","Item":"Granite Tile","Unit":"m2","Rate":45000},
+        {"Section":"TILES","Item":"Marble Tile","Unit":"m2","Rate":65000},
+        {"Section":"TILES","Item":"PVC Tile","Unit":"m2","Rate":12000},
+        {"Section":"TILES","Item":"Terrazzo","Unit":"m2","Rate":35000},
         {"Section":"CONCRETE","Item":"Concrete C15","Unit":"m3","Rate":160000},
         {"Section":"CONCRETE","Item":"Concrete C20","Unit":"m3","Rate":170000},
         {"Section":"CONCRETE","Item":"Concrete C25","Unit":"m3","Rate":180000},
         {"Section":"CONCRETE","Item":"Concrete C30","Unit":"m3","Rate":210000},
-        {"Section":"DOORS","Item":"Steel Door 90x210","Unit":"pc","Rate":95000},
-        {"Section":"DOORS","Item":"Flush Door","Unit":"pc","Rate":45000},
-        {"Section":"WINDOWS","Item":"Aluminium Sliding","Unit":"m2","Rate":65000},
-        {"Section":"CEILING","Item":"Gypsum Board","Unit":"pc","Rate":18000},
+        {"Section":"CONCRETE","Item":"Concrete C35","Unit":"m3","Rate":230000},
+        {"Section":"CONCRETE","Item":"Concrete C40","Unit":"m3","Rate":250000},
+        {"Section":"CONCRETE","Item":"Ready Mix C25","Unit":"m3","Rate":195000},
+        {"Section":"CONCRETE","Item":"Ready Mix C30","Unit":"m3","Rate":225000},
+        {"Section":"GLASS","Item":"Glass 4mm Clear","Unit":"m2","Rate":8500},
+        {"Section":"GLASS","Item":"Glass 5mm Tinted","Unit":"m2","Rate":12000},
+        {"Section":"GLASS","Item":"Glass 6mm Laminated","Unit":"m2","Rate":18000},
+        {"Section":"GLASS","Item":"Mirror","Unit":"m2","Rate":15000},
+        {"Section":"GLASS","Item":"Frosted Glass","Unit":"m2","Rate":14000},
+        {"Section":"GLASS","Item":"Bullet Proof","Unit":"m2","Rate":250000},
         {"Section":"PIPES","Item":"PPR 20mm","Unit":"m","Rate":2500},
         {"Section":"PIPES","Item":"PPR 25mm","Unit":"m","Rate":3500},
+        {"Section":"PIPES","Item":"PPR 32mm","Unit":"m","Rate":4800},
+        {"Section":"PIPES","Item":"PPR 40mm","Unit":"m","Rate":6500},
         {"Section":"PIPES","Item":"PVC 4inch Waste","Unit":"m","Rate":4500},
+        {"Section":"PIPES","Item":"PVC 2inch Waste","Unit":"m","Rate":2800},
+        {"Section":"PIPES","Item":"PVC 6inch","Unit":"m","Rate":8500},
+        {"Section":"PIPES","Item":"HDPE 50mm","Unit":"m","Rate":5500},
+        {"Section":"PIPES","Item":"GI Pipe 1inch","Unit":"m","Rate":3800},
+        {"Section":"WIRES","Item":"Cable 1.5mm","Unit":"m","Rate":850},
         {"Section":"WIRES","Item":"Cable 2.5mm","Unit":"m","Rate":1200},
+        {"Section":"WIRES","Item":"Cable 4mm","Unit":"m","Rate":1800},
+        {"Section":"WIRES","Item":"Cable 6mm","Unit":"m","Rate":2500},
+        {"Section":"WIRES","Item":"Cable 10mm","Unit":"m","Rate":4200},
+        {"Section":"WIRES","Item":"Cable 16mm","Unit":"m","Rate":6500},
+        {"Section":"WIRES","Item":"Twin Earth","Unit":"m","Rate":2200},
+        {"Section":"WIRES","Item":"Armoured Cable","Unit":"m","Rate":12000},
+        {"Section":"DOORS","Item":"Steel Door 90x210","Unit":"pc","Rate":95000},
+        {"Section":"DOORS","Item":"Flush Door","Unit":"pc","Rate":45000},
+        {"Section":"DOORS","Item":"Panel Door","Unit":"pc","Rate":65000},
+        {"Section":"DOORS","Item":"PVC Door","Unit":"pc","Rate":55000},
+        {"Section":"DOORS","Item":"Glass Door","Unit":"pc","Rate":120000},
+        {"Section":"DOORS","Item":"Security Door","Unit":"pc","Rate":250000},
+        {"Section":"WINDOWS","Item":"Aluminium Sliding","Unit":"m2","Rate":65000},
+        {"Section":"WINDOWS","Item":"Aluminium Casement","Unit":"m2","Rate":72000},
+        {"Section":"WINDOWS","Item":"Louver Window","Unit":"m2","Rate":35000},
+        {"Section":"WINDOWS","Item":"Wooden Window","Unit":"m2","Rate":55000},
+        {"Section":"WINDOWS","Item":"UPVC Window","Unit":"m2","Rate":85000},
+        {"Section":"WATERPROOF","Item":"APP Membrane","Unit":"m2","Rate":8500},
+        {"Section":"WATERPROOF","Item":"Bitumen Paint","Unit":"L","Rate":4500},
+        {"Section":"WATERPROOF","Item":"Cementitious Waterproof","Unit":"bag","Rate":35000},
+        {"Section":"WATERPROOF","Item":"Liquid Membrane","Unit":"L","Rate":12000},
+        {"Section":"WATERPROOF","Item":"EPDM","Unit":"m2","Rate":15000},
+        {"Section":"CEILING","Item":"Gypsum Board","Unit":"pc","Rate":18000},
+        {"Section":"CEILING","Item":"PVC Ceiling","Unit":"m2","Rate":12000},
+        {"Section":"CEILING","Item":"Acoustic Ceiling","Unit":"m2","Rate":25000},
+        {"Section":"CEILING","Item":"Wooden T&G","Unit":"m2","Rate":18000},
+        {"Section":"CEILING","Item":"Suspended Ceiling","Unit":"m2","Rate":22000},
+        {"Section":"CEILING","Item":"Mineral Fiber","Unit":"m2","Rate":28000},
+        {"Section":"NAILS","Item":"Nails 1 inch","Unit":"kg","Rate":2200},
+        {"Section":"NAILS","Item":"Nails 2 inch","Unit":"kg","Rate":2200},
+        {"Section":"NAILS","Item":"Nails 3 inch","Unit":"kg","Rate":2200},
+        {"Section":"NAILS","Item":"Nails 4 inch","Unit":"kg","Rate":2200},
+        {"Section":"NAILS","Item":"Roofing Nails","Unit":"kg","Rate":2500},
+        {"Section":"NAILS","Item":"Concrete Nails","Unit":"kg","Rate":2800},
+        {"Section":"NAILS","Item":"U-Nails","Unit":"kg","Rate":3200},
         {"Section":"FITTINGS","Item":"WC Complete","Unit":"pc","Rate":180000},
         {"Section":"FITTINGS","Item":"Wash Basin","Unit":"pc","Rate":95000},
         {"Section":"FITTINGS","Item":"Kitchen Sink","Unit":"pc","Rate":75000},
+        {"Section":"FITTINGS","Item":"Shower Mixer","Unit":"pc","Rate":65000},
+        {"Section":"FITTINGS","Item":"Towel Rail","Unit":"pc","Rate":25000},
+        {"Section":"FITTINGS","Item":"PPR Fittings","Unit":"pc","Rate":1500},
         {"Section":"ELECTRICAL","Item":"Socket 13A","Unit":"pc","Rate":4500},
         {"Section":"ELECTRICAL","Item":"Light Point","Unit":"pc","Rate":8500},
+        {"Section":"ELECTRICAL","Item":"Switch","Unit":"pc","Rate":3500},
+        {"Section":"ELECTRICAL","Item":"DB Board","Unit":"pc","Rate":125000},
+        {"Section":"ELECTRICAL","Item":"Earth Rod","Unit":"pc","Rate":45000},
         {"Section":"DRAINAGE","Item":"Manhole","Unit":"pc","Rate":125000},
         {"Section":"EXTERNAL","Item":"Road Tarmac","Unit":"m2","Rate":35000},
         {"Section":"EXTERNAL","Item":"Chain Link Fence","Unit":"m","Rate":8500},
@@ -271,9 +375,6 @@ if 'materials' not in st.session_state:
         {"Section":"FINISHING","Item":"Screed 1:4","Unit":"m2","Rate":8500},
         {"Section":"FINISHING","Item":"Terrazzo","Unit":"m2","Rate":35000},
         {"Section":"FINISHING","Item":"Mortar 1:4","Unit":"m3","Rate":95000},
-        {"Section":"WATERPROOF","Item":"Cementitious Waterproof","Unit":"bag","Rate":35000},
-        {"Section":"NAILS","Item":"Roofing Nails","Unit":"kg","Rate":2500},
-        {"Section":"FITTINGS","Item":"PPR Fittings","Unit":"pc","Rate":1500},
     ])
 
 # ============= SESSION STATE =============
@@ -303,24 +404,23 @@ with tabs[0]:
     st.divider()
     st.subheader("Manual Takeoff List")
     col1, col2, col3, col4 = st.columns(4)
-    with col1: desc = st.text_input("Description", "Footing F1")
-    with col2: qty = st.number_input("Quantity", 0.0, step=0.1)
-    with col3: unit = st.selectbox("Unit", ["m","m2","m3","pc","kg","L"])
+    with col1: desc = st.text_input("Description", "Footing F1", key="takeoff_desc")
+    with col2: qty = st.number_input("Quantity", min_value=0.0, value=0.0, step=0.1, key="takeoff_qty")
+    with col3: unit = st.selectbox("Unit", ["m","m2","m3","pc","kg","L"], key="takeoff_unit")
     with col4:
         st.write("")
-        if st.button("Add to List"):
+        if st.button("Add to List", key="takeoff_add"):
             st.session_state['takeoff_list'].append({"Description":desc, "Qty":qty, "Unit":unit})
             st.success("Added!")
 
     if st.session_state['takeoff_list']:
-        st.dataframe(pd.DataFrame(st.session_state['takeoff_list']), hide_index=True, use_container_width=True)
-
+        st.dataframe(pd.DataFrame(st.session_state['takeoff_list']), hide_index=True, use_container_width=True)     
 # ===== TAB 2: 20 ELEMENTS TAKEOFF =====
 with tabs[1]:
     st.header("🏗️ 20 Elements Takeoff - SMM Standard")
     st.caption("Hitamo Element → Andika Dimensions → Ihita ibara Materials zose + Cost")
 
-    element_name = st.selectbox("Hitamo Element (20 Total)", list(ELEMENTS.keys()))
+    element_name = st.selectbox("Hitamo Element (20 Total)", list(ELEMENTS.keys()), key="element_select")
     element_data = ELEMENTS[element_name]
 
     st.subheader(f"{element_name}")
@@ -330,15 +430,14 @@ with tabs[1]:
     cols = st.columns(len(element_data['inputs']))
     for i, inp in enumerate(element_data['inputs']):
         with cols[i]:
-            if "Type" in inp or "Dia" in inp:
-                if "Type" in inp:
-                    inputs[inp] = st.selectbox(inp, ["6 inch", "4 inch"])
-                else:
-                    inputs[inp] = st.selectbox(inp, [16, 20, 25])
+            if "Type" in inp:
+                inputs[inp] = st.selectbox(inp, ["6 inch", "4 inch"], key=f"input_{i}_{element_name}")
+            elif "Dia" in inp:
+                inputs[inp] = st.selectbox(inp, [16, 20, 25], key=f"input_{i}_{element_name}")
             elif "Number" in inp or "pcs" in inp:
-                inputs[inp] = st.number_input(inp, 1, step=1, min_value=1)
+                inputs[inp] = st.number_input(inp, min_value=1, value=1, step=1, key=f"input_{i}_{element_name}")
             else:
-                inputs[inp] = st.number_input(inp, 1.0, step=0.1, min_value=0.1)
+                inputs[inp] = st.number_input(inp, min_value=0.1, value=1.0, step=0.1, key=f"input_{i}_{element_name}")
 
     if st.button("Calculate Element", type="primary", key=f"calc_{element_name}"):
         calc_values = list(inputs.values())
@@ -364,12 +463,12 @@ with tabs[1]:
         st.success(f"*TOTAL for {element_name}: {total_cost:,.0f} RWF* - Added to BOQ!")
         st.balloons()
 
-# ===== TAB 3: MATERIAL BROWSER =====
+# ===== TAB 3: MATERIAL BROWSER - TABLE VIEW =====
 with tabs[2]:
-    st.header("🧱 Material Browser - Hitamo Material + Sub Type")
-    st.info("Kanda Main Material → Reba Sub-Types → Hitamo → Andika Qty → Yijya muri BOQ")
+    st.header("🧱 Material Browser - Table View")
+    st.info("Hitamo Main Material → Reba Table ya Sub-Types zose → Kanda kuri row → Andika Qty → Add to BOQ")
 
-    col1, col2 = st.columns([1,2])
+    col1, col2 = st.columns([1,3])
 
     with col1:
         st.subheader("Main Materials")
@@ -377,46 +476,52 @@ with tabs[2]:
         st.session_state['selected_main'] = main_material
 
     with col2:
-        st.subheader(f"Sub-Types za {st.session_state['selected_main']}")
+        st.subheader(f"Table ya {st.session_state['selected_main']}")
         if st.session_state['selected_main']:
-            sub_types = MATERIAL_TREE[st.session_state['selected_main']]
-
-            cols = st.columns(3)
-            for idx, sub in enumerate(sub_types):
-                with cols[idx % 3]:
-                    if st.button(sub, key=f"sub_{sub}", use_container_width=True):
-                        st.session_state['selected_sub'] = sub
-                        st.rerun()
-
-            if st.session_state['selected_sub']:
-                st.success(f"✅ Wahisemo: *{st.session_state['selected_main']} → {st.session_state['selected_sub']}*")
-
-                mat_data = st.session_state['materials'][
+            # Filter materials for selected section
+            mat_df = st.session_state['materials'][st.session_state['materials']['Section']==st.session_state['selected_main']].copy()
+            mat_df = mat_df[['Item','Unit','Rate']].reset_index(drop=True)
+            
+            # Show table with selection
+            event = st.dataframe(
+                mat_df,
+                hide_index=True,
+                use_container_width=True,
+                on_select="rerun",
+                selection_mode="single-row"
+            )
+            
+            # Get selected row
+            if event.selection.rows:
+                selected_idx = event.selection.rows[0]
+                st.session_state['selected_sub'] = mat_df.iloc[selected_idx]['Item']
+                
+                st.success(f"✅ Wahisemo: *{st.session_state['selected_sub']}*")
+                
+                mat = st.session_state['materials'][
                     (st.session_state['materials']['Section']==st.session_state['selected_main']) &
                     (st.session_state['materials']['Item']==st.session_state['selected_sub'])
-                ]
+                ].iloc[0]
+                
+                col1, col2, col3 = st.columns(3)
+                col1.metric("Unit", mat['Unit'])
+                col2.metric("Rate", f"{mat['Rate']:,} RWF")
+                if 'Weight_per_m' in mat: col3.metric("Weight/m", f"{mat['Weight_per_m']} kg")
 
-                if not mat_data.empty:
-                    mat = mat_data.iloc[0]
-                    col1, col2, col3 = st.columns(3)
-                    col1.metric("Unit", mat['Unit'])
-                    col2.metric("Rate", f"{mat['Rate']:,} RWF")
-                    if 'Weight_per_m' in mat: col3.metric("Weight/m", f"{mat['Weight_per_m']} kg")
+                qty = st.number_input("Andika Quantity", min_value=0.0, value=0.0, max_value=999999999.0, step=0.1, key="qty_input")
 
-                    qty = st.number_input("Andika Quantity", 0.0, max_value=999999999.0, step=0.1, key="qty_input")
-
-                    if st.button("➕ Add to BOQ", type="primary", use_container_width=True):
-                        st.session_state['measurements'].append({
-                            "Element": "Manual Selection",
-                            "Item": st.session_state['selected_sub'],
-                            "Qty": qty,
-                            "Unit": mat['Unit'],
-                            "Rate": mat['Rate'],
-                            "Amount": round(qty * mat['Rate'],0),
-                            "Source": "Material Browser"
-                        })
-                        st.success(f"Added {qty} {mat['Unit']} of {st.session_state['selected_sub']} to BOQ!")
-                        st.balloons()
+                if st.button("➕ Add to BOQ", type="primary", use_container_width=True):
+                    st.session_state['measurements'].append({
+                        "Element": "Manual Selection",
+                        "Item": st.session_state['selected_sub'],
+                        "Qty": qty,
+                        "Unit": mat['Unit'],
+                        "Rate": mat['Rate'],
+                        "Amount": round(qty * mat['Rate'],0),
+                        "Source": "Material Browser"
+                    })
+                    st.success(f"Added {qty} {mat['Unit']} of {st.session_state['selected_sub']} to BOQ!")
+                    st.balloons()
 
 # ===== TAB 4: BOQ + EXCEL EXPORT =====
 with tabs[3]:
@@ -461,7 +566,7 @@ with tabs[3]:
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 df_boq.to_excel(writer, index=False, sheet_name='BOQ', startrow=2)
                 ws_boq = writer.sheets['BOQ']
-                ws_boq['A1'] = "B-ESTAMER 5.3 - BILL OF QUANTITIES - 20 ELEMENTS"
+                ws_boq['A1'] = "B-ESTAMER 5.5 - BILL OF QUANTITIES - 20 ELEMENTS"
                 ws_boq['A1'].font = Font(bold=True, size=16, color="FFFFFF")
                 ws_boq['A1'].fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
                 ws_boq.merge_cells('A1:H1')
@@ -518,11 +623,11 @@ with tabs[3]:
         st.download_button(
             "📊 Download Complete Excel (BOQ + Drawing + Takeoff)",
             create_excel(),
-            "B-ESTAMER_5.3_20_ELEMENTS_BOQ.xlsx",
+            "B-ESTAMER_5.5_20_ELEMENTS_BOQ.xlsx",
             mime="application/vnd.ms-excel",
             type="primary",
             use_container_width=True
         )
 
 st.divider()
-st.caption("B-ESTAMER 5.3 | 20 Elements + Material Browser | Kigali College SMM | 0787993679")
+st.caption("B-ESTAMER 5.5 | 20 Elements + Material Table Browser  | 0787993679")
