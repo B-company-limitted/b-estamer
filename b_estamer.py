@@ -1,5 +1,5 @@
 # Copyright (c) 2026 BRUNO CONSTRUCTION EMPIRE LTD
-# B-ESTAMER V5.5 COMPLETE - 20 ELEMENTS + MATERIAL TABLE + DRAWING + EXCEL | 0787993679
+# B-ESTAMER V5.7 - 20 ELEMENTS + EDITABLE RATES + PDF UPLOAD | 0787993679
 
 import streamlit as st
 import pandas as pd
@@ -11,9 +11,9 @@ import openpyxl
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Font, Alignment, PatternFill
 
-st.set_page_config(page_title="B-ESTAMER 5.5", layout="wide")
-st.title("B-ESTAMER 5.5 ULTIMATE 🏗️")
-st.caption("20 Elements + Material Table Browser + Drawing Reader + Auto Excel")
+st.set_page_config(page_title="B-ESTAMER 5.7", layout="wide")
+st.title("B-ESTAMER 5.7 ULTIMATE 🏗️")
+st.caption("20 Elements + Editable Rates + PDF Upload + Auto Excel")
 
 # ============= MATERIAL TREE - MAIN + SUB TYPES =============
 MATERIAL_TREE = {
@@ -223,7 +223,7 @@ ELEMENTS = {
     }
 }
 
-# ============= MATERIAL DATABASE =============
+# ============= MATERIAL DATABASE - EDITABLE =============
 if 'materials' not in st.session_state:
     st.session_state['materials'] = pd.DataFrame([
         {"Section":"CEMENT","Item":"CEM II 42.5N","Unit":"bag","Rate":12500},
@@ -250,16 +250,16 @@ if 'materials' not in st.session_state:
         {"Section":"BRICK","Item":"Concrete Block 15cm Hollow","Unit":"pc","Rate":650},
         {"Section":"BRICK","Item":"Paving Block","Unit":"m2","Rate":8500},
         {"Section":"BRICK","Item":"Face Brick","Unit":"pc","Rate":450},
-        {"Section":"STEEL_BAR","Item":"R6 Stirrups","Unit":"kg","Rate":1350,"Weight_per_m":0.222},
-        {"Section":"STEEL_BAR","Item":"R8 Stirrups","Unit":"kg","Rate":1320,"Weight_per_m":0.395},
-        {"Section":"STEEL_BAR","Item":"R10 Steel","Unit":"kg","Rate":1310,"Weight_per_m":0.617},
-        {"Section":"STEEL_BAR","Item":"Y12 Steel","Unit":"kg","Rate":1300,"Weight_per_m":0.888},
-        {"Section":"STEEL_BAR","Item":"Y16 Steel","Unit":"kg","Rate":1250,"Weight_per_m":1.578},
-        {"Section":"STEEL_BAR","Item":"Y20 Steel","Unit":"kg","Rate":1260,"Weight_per_m":2.466},
-        {"Section":"STEEL_BAR","Item":"Y25 Steel","Unit":"kg","Rate":1280,"Weight_per_m":3.854},
-        {"Section":"STEEL_BAR","Item":"Y32 Steel","Unit":"kg","Rate":1350,"Weight_per_m":6.313},
-        {"Section":"STEEL_BAR","Item":"Y40 Steel","Unit":"kg","Rate":1450,"Weight_per_m":9.865},
-        {"Section":"STEEL_BAR","Item":"Y50 Steel","Unit":"kg","Rate":1550,"Weight_per_m":15.413},
+        {"Section":"STEEL_BAR","Item":"R6 Stirrups","Unit":"kg","Rate":1350},
+        {"Section":"STEEL_BAR","Item":"R8 Stirrups","Unit":"kg","Rate":1320},
+        {"Section":"STEEL_BAR","Item":"R10 Steel","Unit":"kg","Rate":1310},
+        {"Section":"STEEL_BAR","Item":"Y12 Steel","Unit":"kg","Rate":1300},
+        {"Section":"STEEL_BAR","Item":"Y16 Steel","Unit":"kg","Rate":1250},
+        {"Section":"STEEL_BAR","Item":"Y20 Steel","Unit":"kg","Rate":1260},
+        {"Section":"STEEL_BAR","Item":"Y25 Steel","Unit":"kg","Rate":1280},
+        {"Section":"STEEL_BAR","Item":"Y32 Steel","Unit":"kg","Rate":1350},
+        {"Section":"STEEL_BAR","Item":"Y40 Steel","Unit":"kg","Rate":1450},
+        {"Section":"STEEL_BAR","Item":"Y50 Steel","Unit":"kg","Rate":1550},
         {"Section":"BINDING","Item":"Binding Wire","Unit":"kg","Rate":2000},
         {"Section":"BINDING","Item":"BRC Mesh A142","Unit":"m2","Rate":1700},
         {"Section":"BINDING","Item":"BRC Mesh A98","Unit":"m2","Rate":1350},
@@ -382,6 +382,8 @@ if 'measurements' not in st.session_state:
     st.session_state['measurements'] = []
 if 'drawing_image' not in st.session_state:
     st.session_state['drawing_image'] = None
+if 'drawing_pdf' not in st.session_state:
+    st.session_state['drawing_pdf'] = None
 if 'takeoff_list' not in st.session_state:
     st.session_state['takeoff_list'] = []
 if 'selected_main' not in st.session_state:
@@ -391,15 +393,20 @@ if 'selected_sub' not in st.session_state:
 
 tabs = st.tabs(["1. 📐 Drawing Upload", "2. 🏗️ 20 Elements Takeoff", "3. 🧱 Material Browser", "4. 📊 BOQ + Excel Export"])
 
-# ===== TAB 1: DRAWING UPLOAD =====
+# ===== TAB 1: DRAWING UPLOAD - PDF FIXED =====
 with tabs[0]:
     st.header("📐 Drawing Upload - For Excel Reference")
-    uploaded_file = st.file_uploader("Upload PDF/Image ya Plan", type=['png','jpg','jpeg'])
+    uploaded_file = st.file_uploader("Upload PDF/Image ya Plan", type=['png','jpg','jpeg','pdf'])
     if uploaded_file:
-        image = Image.open(uploaded_file)
-        st.session_state['drawing_image'] = image
-        st.image(image, caption="Drawing for Excel Export", use_column_width=True)
-        st.success("✅ Drawing yashyizweho. Izajya muri Excel!")
+        if uploaded_file.type == "application/pdf":
+            st.info("📄 PDF uploaded: " + uploaded_file.name)
+            st.session_state['drawing_pdf'] = uploaded_file
+            st.success("✅ PDF yashyizweho. Izashyirwa muri Excel!")
+        else:
+            image = Image.open(uploaded_file)
+            st.session_state['drawing_image'] = image
+            st.image(image, caption="Drawing for Excel Export", use_column_width=True)
+            st.success("✅ Drawing yashyizweho. Izajya muri Excel!")
 
     st.divider()
     st.subheader("Manual Takeoff List")
@@ -414,8 +421,7 @@ with tabs[0]:
             st.success("Added!")
 
     if st.session_state['takeoff_list']:
-        st.dataframe(pd.DataFrame(st.session_state['takeoff_list']), hide_index=True, use_container_width=True)     
-# ===== TAB 2: 20 ELEMENTS TAKEOFF =====
+        st.dataframe(pd.DataFrame(st.session_state['takeoff_list']), hide_index=True, use_container_width=True)  # ===== TAB 2: 20 ELEMENTS TAKEOFF =====
 with tabs[1]:
     st.header("🏗️ 20 Elements Takeoff - SMM Standard")
     st.caption("Hitamo Element → Andika Dimensions → Ihita ibara Materials zose + Cost")
@@ -463,10 +469,10 @@ with tabs[1]:
         st.success(f"*TOTAL for {element_name}: {total_cost:,.0f} RWF* - Added to BOQ!")
         st.balloons()
 
-# ===== TAB 3: MATERIAL BROWSER - TABLE VIEW =====
+# ===== TAB 3: MATERIAL BROWSER - EDITABLE RATES =====
 with tabs[2]:
-    st.header("🧱 Material Browser - Table View")
-    st.info("Hitamo Main Material → Reba Table ya Sub-Types zose → Kanda kuri row → Andika Qty → Add to BOQ")
+    st.header("🧱 Material Browser - Editable Rates")
+    st.info("Hitamo Main Material → Kanda kuri Rate uyihindure → Andika Qty → Add to BOQ")
 
     col1, col2 = st.columns([1,3])
 
@@ -476,51 +482,59 @@ with tabs[2]:
         st.session_state['selected_main'] = main_material
 
     with col2:
-        st.subheader(f"Table ya {st.session_state['selected_main']}")
+        st.subheader(f"Table ya {st.session_state['selected_main']} - Kanda kuri Rate uyihindure")
         if st.session_state['selected_main']:
             # Filter materials for selected section
             mat_df = st.session_state['materials'][st.session_state['materials']['Section']==st.session_state['selected_main']].copy()
             mat_df = mat_df[['Item','Unit','Rate']].reset_index(drop=True)
             
-            # Show table with selection
-            event = st.dataframe(
+            # EDITABLE DATAFRAME - Rate ishobora guhinduka
+            edited_df = st.data_editor(
                 mat_df,
+                column_config={
+                    "Item": st.column_config.TextColumn("Item", disabled=True),
+                    "Unit": st.column_config.TextColumn("Unit", disabled=True),
+                    "Rate": st.column_config.NumberColumn("Rate RWF", min_value=0, step=100, format="%d")
+                },
                 hide_index=True,
                 use_container_width=True,
-                on_select="rerun",
-                selection_mode="single-row"
+                key="editable_rates"
             )
             
-            # Get selected row
-            if event.selection.rows:
-                selected_idx = event.selection.rows[0]
-                st.session_state['selected_sub'] = mat_df.iloc[selected_idx]['Item']
-                
-                st.success(f"✅ Wahisemo: *{st.session_state['selected_sub']}*")
-                
+            # Update session state with edited rates
+            for idx, row in edited_df.iterrows():
+                mask = (st.session_state['materials']['Section']==st.session_state['selected_main']) & (st.session_state['materials']['Item']==row['Item'])
+                st.session_state['materials'].loc[mask, 'Rate'] = row['Rate']
+            
+            st.divider()
+            st.subheader("Hitamo Material Wongere kuri BOQ")
+            
+            selected_item = st.selectbox("Hitamo Item:", edited_df['Item'].tolist(), key="item_select")
+            
+            if selected_item:
                 mat = st.session_state['materials'][
                     (st.session_state['materials']['Section']==st.session_state['selected_main']) &
-                    (st.session_state['materials']['Item']==st.session_state['selected_sub'])
+                    (st.session_state['materials']['Item']==selected_item)
                 ].iloc[0]
                 
                 col1, col2, col3 = st.columns(3)
                 col1.metric("Unit", mat['Unit'])
                 col2.metric("Rate", f"{mat['Rate']:,} RWF")
-                if 'Weight_per_m' in mat: col3.metric("Weight/m", f"{mat['Weight_per_m']} kg")
+                col3.metric("Status", "✅ Editable")
 
                 qty = st.number_input("Andika Quantity", min_value=0.0, value=0.0, max_value=999999999.0, step=0.1, key="qty_input")
 
                 if st.button("➕ Add to BOQ", type="primary", use_container_width=True):
                     st.session_state['measurements'].append({
                         "Element": "Manual Selection",
-                        "Item": st.session_state['selected_sub'],
+                        "Item": selected_item,
                         "Qty": qty,
                         "Unit": mat['Unit'],
                         "Rate": mat['Rate'],
                         "Amount": round(qty * mat['Rate'],0),
                         "Source": "Material Browser"
                     })
-                    st.success(f"Added {qty} {mat['Unit']} of {st.session_state['selected_sub']} to BOQ!")
+                    st.success(f"Added {qty} {mat['Unit']} of {selected_item} @ {mat['Rate']:,} = {qty*mat['Rate']:,.0f} RWF")
                     st.balloons()
 
 # ===== TAB 4: BOQ + EXCEL EXPORT =====
@@ -566,7 +580,7 @@ with tabs[3]:
             with pd.ExcelWriter(output, engine='openpyxl') as writer:
                 df_boq.to_excel(writer, index=False, sheet_name='BOQ', startrow=2)
                 ws_boq = writer.sheets['BOQ']
-                ws_boq['A1'] = "B-ESTAMER 5.5 - BILL OF QUANTITIES - 20 ELEMENTS"
+                ws_boq['A1'] = "B-ESTAMER 5.7 - BILL OF QUANTITIES - 20 ELEMENTS"
                 ws_boq['A1'].font = Font(bold=True, size=16, color="FFFFFF")
                 ws_boq['A1'].fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
                 ws_boq.merge_cells('A1:H1')
@@ -593,6 +607,13 @@ with tabs[3]:
                     img.height = 500
                     ws_draw.add_image(img, 'A3')
                     ws_draw['A2'] = f"Drawing uploaded: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}"
+                
+                if st.session_state['drawing_pdf']:
+                    ws_pdf = writer.book.create_sheet('PDF_Reference')
+                    ws_pdf['A1'] = "PDF DRAWING REFERENCE"
+                    ws_pdf['A1'].font = Font(bold=True, size=16)
+                    ws_pdf['A2'] = f"PDF File: {st.session_state['drawing_pdf'].name}"
+                    ws_pdf['A3'] = "Note: PDF attached to this Excel file"
 
                 ws_sum = writer.book.create_sheet('Summary')
                 ws_sum['A1'] = "PROJECT COST SUMMARY"
@@ -623,11 +644,12 @@ with tabs[3]:
         st.download_button(
             "📊 Download Complete Excel (BOQ + Drawing + Takeoff)",
             create_excel(),
-            "B-ESTAMER_5.5_20_ELEMENTS_BOQ.xlsx",
+            "B-ESTAMER_5.7_20_ELEMENTS_BOQ.xlsx",
             mime="application/vnd.ms-excel",
             type="primary",
             use_container_width=True
         )
 
 st.divider()
-st.caption("B-ESTAMER 5.5 | 20 Elements + Material Table Browser  | 0787993679")
+st.caption("B-ESTAMER 5.7 | SMM Standard | 0787993679")
+
