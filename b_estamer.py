@@ -26,15 +26,91 @@ if 'subtype' not in st.session_state:
 # 2. Material ya mbere
 materials = ['Steel', 'Concrete', 'Timber', 'Aluminum']
 st.session_state.material = st.selectbox(
-    'Hitamo Material',
-    materials,
-    index=materials.index(st.session_state.material),
-    key='material_select'
-)
+# ===== TAB 3: 🧱 MATERIAL BROWSER - TABLE VIEW + SUBTYPE MEMORY =====
+with tabs[2]:
+    st.header("🧱 Material Browser - Table View")
+    st.info("Hitamo Main Material → Subtype yabitswe ihita iza → Kanda kuri row → Andika Qty")
 
-# 3. Subtypes zihinduka hashingiye kuri material
-subtypes_dict = {
-    'Steel': ['Mild Steel', 'High Carbon Steel', 'Stainless Steel'],
+    col1, col2 = st.columns([1,3])
+
+    with col1:
+        st.subheader("Main Materials")
+        main_options = list(MATERIAL_TREE.keys())
+
+        # KUBIKA MAIN MATERIAL - ntisubira kuri CEMENT
+        if st.session_state['selected_main'] not in main_options:
+            st.session_state['selected_main'] = main_options[0]
+        main_index = main_options.index(st.session_state['selected_main'])
+
+        main_material = st.radio(
+            "Hitamo Material:",
+            main_options,
+            index=main_index,
+            key="main_radio_v58"
+        )
+        st.session_state['selected_main'] = main_material
+
+    with col2:
+        st.subheader(f"Table ya {st.session_state['selected_main']}")
+
+        # Filter materials
+        mat_df = st.session_state['materials'][st.session_state['materials']['Section']==st.session_state['selected_main']].copy()
+        mat_df = mat_df[['Item','Unit','Rate']].reset_index(drop=True)
+
+        # KUBIKA SUBTYPE - Iyi niyo magic
+        if st.session_state['selected_sub'] in mat_df['Item'].values:
+            default_row = mat_df[mat_df['Item'] == st.session_state['selected_sub']].index[0]
+        else:
+            default_row = 0
+            st.session_state['selected_sub'] = mat_df.iloc[0]['Item']
+
+        # DATAFRAME IZAHORA IHITAMO ROW YABITSWE
+        event = st.dataframe(
+            mat_df,
+            hide_index=True,
+            use_container_width=True,
+            on_select="rerun",
+            selection_mode="single-row",
+            selection={"rows": [default_row]}
+        )
+
+        # UPDATE IYO UKANZE ROW NSHYA
+        if event.selection.rows:
+            selected_idx = event.selection.rows[0]
+            st.session_state['selected_sub'] = mat_df.iloc[selected_idx]['Item']
+
+        st.success(f"✅ Wahisemo: *{st.session_state['selected_sub']}*")
+
+        mat = st.session_state['materials'][
+            (st.session_state['materials']['Section']==st.session_state['selected_main']) &
+            (st.session_state['materials']['Item']==st.session_state['selected_sub'])
+        ].iloc[0]
+
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Unit", mat['Unit'])
+        col2.metric("Rate", f"{mat['Rate']:,} RWF")
+
+        qty = st.number_input("Andika Quantity", min_value=0.0, value=0.0, max_value=999.0, step=0.1, key="qty_input_v58")
+
+        if st.button("➕ Add to BOQ", type="primary", use_container_width=True):
+            st.session_state['measurements'].append({
+                "Element": "Manual Selection",
+                "Item": st.session_state['selected_sub'],
+                "Qty": qty,
+                "Unit": mat['Unit'],
+                "Rate": mat['Rate'],
+                "Amount": round(qty * mat['Rate'],0),
+                "Source": "Material Browser"
+            })
+            st.success(f"Added {qty} {mat['Unit']} of {st.session_state['selected_sub']} to BOQ!")
+            st.balloons()
+### Uko uyishyira muri file:
+...koze Tab 2...
+[HASIGA IYI LINE IMWE IDAHAGAZE]
+# ===== TAB 3: 🧱 MATERIAL BROWSER... <- PASTE IYANZUGA IYI
+...code yose...
+[HASIGA IYI LINE IMWE IDAHAGAZE]
+# ===== TAB 4: BOQ + EXCEL EXPORT... 
     'Concrete': ['C25/30', 'C30/37', 'C40/50'],
     'Timber': ['Softwood', 'Hardwood', 'Plywood'],
     'Aluminum': ['6061-T6', '7075-T6']
