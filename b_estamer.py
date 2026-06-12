@@ -73,17 +73,16 @@ subtypes = subtypes_dict[st.session_state.material]
 # Reba niba subtype ya kera ikiri muri list nshya
 if st.session_state.subtype not in subtypes:
     st.session_state.subtype = subtypes[0]
+subtype_index = subtypes.index(st.session_state.subtype) if st.session_state.subtype in subtypes else 0
 
-# Ubu ukoreshe index + key zitandukanye
-subtype_index = subtypes.index(st.session_state.subtype)
 st.session_state.subtype = st.selectbox(
     "Hitamo Subtype",
     subtypes,
-    index=subtype_index, # <- Iki gituma idasubira kuri 0
-    key="subtype_select" # <- Key itandukanye na material
+    index=subtype_index,
+    key="subtype_select"
 )
-    key='subtype_select' # <- Iyi key ntigomba gufata n'iya mbere
-)
+# Ubu ukoreshe index + key zitandukanye
+subtype_index = subtypes.index(st.session_state.subtype)
 
 st.write(f"Uhitamo: {st.session_state.material} → {st.session_state.subtype}")
 ### Amakosa 3 abantu bakora:
