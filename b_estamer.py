@@ -86,7 +86,6 @@ subtype_index = subtypes.index(st.session_state.subtype)
 
 st.write(f"Uhitamo: {st.session_state.material} → {st.session_state.subtype}")
 ### Amakosa 3 abantu bakora:
-*Ikosa*	*Igikwiye*
 Zombi selectbox zifite key imwe	Buri selectbox igomba kugira key yihariye
 index=0 buri gihe	Koresha index=materials.index(st.session_state.material)
 Nta session_state	Bika selection muri st.session_state
