@@ -11,10 +11,94 @@ import openpyxl
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Font, Alignment, PatternFill
 
-st.set_page_config(page_title="B-ESTAMER 5.7", layout="wide")
+st.set_page_config(page_title="B-ESTAMER 5.7", layout="wide")  
 st.title("B-ESTAMER 5.7 ULTIMATE 🏗️")
 st.caption("20 Elements + Editable Rates + PDF Upload + Auto Excel")
 
+import streamlit as st
+
+# 1. Bika selection muri session_state
+if 'material' not in st.session_state:
+    st.session_state.material = 'Steel'
+if 'subtype' not in st.session_state:
+    st.session_state.subtype = ''
+
+# 2. Material ya mbere
+materials = ['Steel', 'Concrete', 'Timber', 'Aluminum']
+st.session_state.material = st.selectbox(
+    'Hitamo Material',
+    materials,
+    index=materials.index(st.session_state.material),
+    key='material_select'
+)
+
+# 3. Subtypes zihinduka hashingiye kuri material
+subtypes_dict = {
+    'Steel': ['Mild Steel', 'High Carbon Steel', 'Stainless Steel'],
+    'Concrete': ['C25/30', 'C30/37', 'C40/50'],
+    'Timber': ['Softwood', 'Hardwood', 'Plywood'],
+    'Aluminum': ['6061-T6', '7075-T6']
+} # Material ya mbere
+st.session_state.material = st.selectbox(
+    "Hitamo Material", 
+    list(subtypes_dict.keys()),
+    key="material_select"
+)
+
+# Subtype ya kabiri - IBIKOMEYE HANO
+subtypes = subtypes_dict[st.session_state.material]
+
+# Reba niba subtype ya kera ikiri muri list nshya
+if st.session_state.subtype not in subtypes:
+    st.session_state.subtype = subtypes[0]
+
+# Ubu ukoreshe index + key zitandukanye
+subtype_index = subtypes.index(st.session_state.subtype)
+st.session_state.subtype = st.selectbox(
+    "Hitamo Subtype",
+    subtypes,
+    index=subtype_index, # <- Iki gituma idasubira kuri 0
+    key="subtype_select" # <- Key itandukanye na material
+)
+# Material ya mbere
+st.session_state.material = st.selectbox(
+    "Hitamo Material", 
+    list(subtypes_dict.keys()),
+    key="material_select"
+)
+
+# Subtype ya kabiri - IBIKOMEYE HANO
+subtypes = subtypes_dict[st.session_state.material]
+
+# Reba niba subtype ya kera ikiri muri list nshya
+if st.session_state.subtype not in subtypes:
+    st.session_state.subtype = subtypes[0]
+
+# Ubu ukoreshe index + key zitandukanye
+subtype_index = subtypes.index(st.session_state.subtype)
+st.session_state.subtype = st.selectbox(
+    "Hitamo Subtype",
+    subtypes,
+    index=subtype_index, # <- Iki gituma idasubira kuri 0
+    key="subtype_select" # <- Key itandukanye na material
+)
+    key='subtype_select' # <- Iyi key ntigomba gufata n'iya mbere
+)
+
+st.write(f"Uhitamo: {st.session_state.material} → {st.session_state.subtype}")
+### Amakosa 3 abantu bakora:
+*Ikosa*	*Igikwiye*
+Zombi selectbox zifite key imwe	Buri selectbox igomba kugira key yihariye
+index=0 buri gihe	Koresha index=materials.index(st.session_state.material)
+Nta session_state	Bika selection muri st.session_state
+### Trick yihuse:
+Niba ushaka ko subtype ihinduka iyo material ihindutse:
+if 'last_material' not in st.session_state:
+    st.session_state.last_material = st.session_state.material
+
+if st.session_state.material!= st.session_state.last_material:
+    st.session_state.subtype = subtypes[0] # Subira ku wa mbere
+    st.session_state.last_material = st.session_state.material
 # ============= MATERIAL TREE - MAIN + SUB TYPES =============
 MATERIAL_TREE = {
     "CEMENT": ["CEM II 42.5N","CEM I 52.5N","White Cement","Quick Set Cement","Portland Cement"],
